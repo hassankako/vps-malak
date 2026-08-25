@@ -142,5 +142,5 @@ while true; do
             esac
             read -p "Press Enter to continue..."
             ;;
-    es:
+    esac
 done
