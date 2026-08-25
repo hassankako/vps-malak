@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v5.5 Masterpiece
+# VERSION: v5.6 Masterpiece
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -31,7 +31,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v5.5 ]            ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v5.6 ]            ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain     :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
@@ -54,48 +54,71 @@ while true; do
         1)
             clear
             echo -e "${C_GRN}--- SSH / OVPN MANAGER ---${NC}"
-            echo "1. Add SSH & OpenVPN User (with Payload)"
+            echo "1. Add SSH & OpenVPN User (with Days & Max Limit)"
             echo "2. Delete SSH User"
-            echo "3. List Users & Online Connections"
+            echo "3. List Users, Days Left & Active Connections"
             read -p "Choose [1-3]: " sub
             if [ "$sub" = "1" ]; then
                 read -p "Enter Username: " uname
                 read -p "Enter Password: " upass
-                read -p "Enter Expiry Days: " udays
+                read -p "Enter Expiry Days (e.g., 30): " udays
+                read -p "Enter Max Limit (Max devices connected): " ulimit
                 
                 useradd -M -s /bin/false "$uname" 2>/dev/null
                 echo "$uname:$upass" | chpasswd
+                
+                # حساب تاريخ الانتهاء
                 EXP_DATE=$(date -d "+$udays days" +"%Y-%m-%d" 2>/dev/null || date -v +${udays}d +"%Y-%m-%d" 2>/dev/null)
+                chage -E "$EXP_DATE" "$uname" 2>/dev/null
+                
+                # حفظ الحد الأقصى المسموح للأجهزة في ملف مخصص
+                echo "$ulimit" > "/etc/security/limits.d/$uname.limit" 2>/dev/null
                 
                 echo -e "\n${C_GRN}==================================================${C_NC}"
-                echo -e "${C_YLW}           ACCOUNT & OVPN CONFIG DETAILS          ${C_NC}"
+                echo -e "${C_YLW}        ACCOUNT CREATED & CONFIGURED SUCCESSFULLY ${C_NC}"
                 echo -e "${C_GRN}==================================================${C_NC}"
-                echo -e "${C_WHT} Username  : ${C_CYN}$uname${C_NC}"
-                echo -e "${C_WHT} Password  : ${C_CYN}$upass${C_NC}"
-                echo -e "${C_WHT} Host/IP   : ${C_CYN}$PUBLIC_IP${C_NC}"
-                echo -e "${C_WHT} Domain    : ${C_CYN}$DOMAIN${C_NC}"
-                echo -e "${C_WHT} Expires   : ${C_GRN}$EXP_DATE${C_NC}"
+                echo -e "${C_WHT} Username   : ${C_CYN}$uname${C_NC}"
+                echo -e "${C_WHT} Password   : ${C_CYN}$upass${C_NC}"
+                echo -e "${C_WHT} Valid Days : ${C_GRN}$udays Days (Expires: $EXP_DATE)${C_NC}"
+                echo -e "${C_WHT} Max Limit  : ${C_GRN}$ulimit Device(s)${C_NC}"
+                echo -e "${C_WHT} Host/IP    : ${C_CYN}$PUBLIC_IP${C_NC}"
+                echo -e "${C_WHT} Domain     : ${C_CYN}$DOMAIN${C_NC}"
                 echo -e "\n${C_YLW}--- OpenVPN TCP / UDP Payload ---${C_NC}"
                 echo -e "${C_CYN}GET / HTTP/1.1[crlf]Host: $DOMAIN[crlf][crlf]${C_NC}"
                 echo -e "${C_GRN}==================================================${C_NC}"
                 
             elif [ "$sub" = "2" ]; then
                 read -p "Username to delete: " uname
-                userdel "$uname" && echo -e "${C_RED}User deleted successfully.${C_NC}"
+                userdel -r "$uname" 2>/dev/null
+                rm -f "/etc/security/limits.d/$uname.limit" 2>/dev/null
+                echo -e "${C_RED}User deleted successfully.${C_NC}"
             elif [ "$sub" = "3" ]; then
                 clear
-                echo -e "${C_GRN}       SSH USERS & ACTIVE CONNECTIONS REPORT      ${C_NC}"
-                echo "--------------------------------------------------"
-                printf "${C_CYN}%-20s | %-15s${C_NC}\n" "USERNAME" "ACTIVE CONNECTIONS"
-                echo "--------------------------------------------------"
+                echo -e "${C_GRN}      SSH USERS, DAYS LEFT & ACTIVE CONNECTIONS      ${C_NC}"
+                echo "-------------------------------------------------------------------"
+                printf "${C_CYN}%-15s | %-12s | %-18s | %-15s${C_NC}\n" "USERNAME" "EXPIRES ON" "MAX LIMIT ALLOWED" "CURRENT ONLINE"
+                echo "-------------------------------------------------------------------"
+                
                 for user in $(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd); do
-                    count=$(ps -u "$user" | grep -v "PID" | wc -l)
-                    if [ "$count" -gt 0 ]; then
-                        printf "${C_WHT}%-20s${C_NC} | ${C_GRN}%-15s${C_NC}\n" "$user" "$count Online Device(s)"
+                    # جلب تاريخ انتهاء الحساب
+                    exp_date=$(chage -l "$user" 2>/dev/null | grep "Account expires" | cut -d: -f2 | xargs)
+                    [ -z "$exp_date" ] || [ "$exp_date" = "never" ] && exp_date="Unlimited"
+                    
+                    # جلب الحد الأقصى المسموح
+                    max_limit=$(cat "/etc/security/limits.d/$user.limit" 2>/dev/null || echo "1")
+                    
+                    # حساب عدد المتصلين الفعليين الآن
+                    active_count=$(ps -u "$user" | grep -v "PID" | wc -l)
+                    
+                    if [ "$active_count" -gt 0 ]; then
+                        active_str="${C_GRN}$active_count Active${C_NC}"
                     else
-                        printf "${C_WHT}%-20s${C_NC} | ${C_RED}%-15s${C_NC}\n" "$user" "Offline (0)"
+                        active_str="${C_RED}0 Offline${C_NC}"
                     fi
+                    
+                    printf "${C_WHT}%-15s${C_NC} | ${C_WHT}%-12s${C_NC} | ${C_YLW}%-18s${C_NC} | %-15s\n" "$user" "$exp_date" "$max_limit Device(s)" "$active_str"
                 done
+                echo "-------------------------------------------------------------------"
             fi
             read -p "Press Enter to continue..."
             ;;
