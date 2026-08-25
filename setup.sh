@@ -1,5 +1,13 @@
 #!/bin/bash
-RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; BLUE='\033[0;34m'; NC='\033[0m'
+# =========================================
+# SCRIPT NAME: K3ko Script
+# VERSION: v3.5 Pro
+# DESCRIPTION: Professional VPS Management Interface
+# AUTHOR: HASSAN K3KO
+# =========================================
+
+# تعيين الألوان
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; BLUE='\033[0;34m'; WHITE='\033[1;37m'; NC='\033[0m'; BOLD='\033[1m'
 
 # ملفات تتبع النظام
 INSTALL_DATE_FILE="/etc/vps_install_date.txt"
@@ -13,7 +21,7 @@ SECONDS_PASSED=$((CURRENT_TIME - INSTALL_TIME))
 VPS_DAYS=$((SECONDS_PASSED / 86400))
 [ $VPS_DAYS -lt 0 ] && VPS_DAYS=0
 
-# إعداد البنر المخصص تلقائياً
+# إعداد البنر المخصص تلقائياً (تم الحفاظ عليه)
 if [ ! -f /etc/issue.net ]; then
     cat << 'BANNER_EOF' > /etc/issue.net
 💥 INTERNET ILIMITADO ☄️
@@ -29,8 +37,22 @@ BANNER_EOF
     systemctl restart ssh 2>/dev/null || systemctl restart sshd 2>/dev/null
 fi
 
+# دالة لعرض الترويسة والجدول
+show_header() {
+    echo -e "${BOLD}${CYAN}╔════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${BOLD}${CYAN}║${NC}                ${BOLD}${WHITE}[:: K3ko Script | v3.5 Pro ::]${NC}                 ${BOLD}${CYAN}║${NC}"
+    echo -e "${BOLD}${CYAN}╠════════════════════════════════════════════════════════════╣${NC}"
+}
+
+# دالة لعرض التذييل
+show_footer() {
+    echo -e "${BOLD}${CYAN}╚════════════════════════════════════════════════════════════╝${NC}"
+    echo -e "${NC}                  ${WHITE}Today: $(date '+%Y-%m-%d %H:%M:%S')${NC}"
+}
+
 while true; do
     clear
+    # الحصول على معلومات النظام
     if [ -f /etc/os-release ]; then
         . /etc/os-release
         SYS_OS="$PRETTY_NAME"
@@ -44,25 +66,26 @@ while true; do
     DOMAIN=$(cat /etc/domain 2>/dev/null || echo "$PUBLIC_IP")
     ONLINE_USERS=$(who | wc -l 2>/dev/null || echo "0")
 
-    echo -e "${YELLOW}.::::. K3ko .::::.${NC}"
-    echo "____________________________________________"
-    echo -e "${RED}SYS OS : ${NC}$SYS_OS"
-    echo -e "${RED}RAM : ${NC}$(free -m | awk 'NR==2{printf "%s MB / %s MB", $2, $3}' 2>/dev/null || echo "N/A")"
-    echo -e "${RED}UP : ${NC}$UPTIME"
-    echo -e "${RED}CORE : ${NC}$CORE_COUNT"
-    echo -e "${RED}IP : ${NC}$PUBLIC_IP"
-    echo -e "${RED}DOMAIN : ${NC}${CYAN}$DOMAIN${NC}"
-    echo -e "${RED}ONLINE USERS : ${NC}${GREEN}$ONLINE_USERS Active User(s)${NC}"
-    echo -e "${RED}VPS ACTIVE : ${NC}${GREEN}$VPS_DAYS Day(s) Running${NC}"
-    echo "____________________________________________"
-    echo -e "${CYAN}1.SSH OVPN MANAGER   4.TROJAN MANAGER${NC}"
-    echo -e "${CYAN}2.VMESS MANAGER      5.SHDWSK MANAGER${NC}"
-    echo -e "${CYAN}3.VLESS MANAGER      6.OTHER SETTINGS${NC}"
-    echo "____________________________________________"
-    echo "              Version script: v3.3 Pro"
-    echo -e "${RED}|${NC}${GREEN}|${NC}${BLUE}|${NC}${CYAN}|${NC}"
+    # رسم الواجهة
+    show_header
+    echo -e "${BOLD}${CYAN}║${NC} ${BOLD}OS:${NC}       ${BLUE}$SYS_OS${NC}"
+    echo -e "${BOLD}${CYAN}║${NC} ${BOLD}RAM:${NC}      $(free -m | awk 'NR==2{printf "%s MB / %s MB", $2, $3}' 2>/dev/null || echo "N/A")"
+    echo -e "${BOLD}${CYAN}║${NC} ${BOLD}UPTIME:${NC}   $UPTIME | ${BOLD}CORES:${NC} $CORE_COUNT"
+    echo -e "${BOLD}${CYAN}║${NC} ${BOLD}IP:${NC}       ${WHITE}$PUBLIC_IP${NC}"
+    echo -e "${BOLD}${CYAN}║${NC} ${BOLD}DOMAIN:${NC}   ${CYAN}$DOMAIN${NC}"
+    echo -e "${BOLD}${CYAN}║${NC} ${BOLD}ACTIVE:${NC}   ${GREEN}$ONLINE_USERS Online User(s) | $VPS_DAYS Day(s) Running${NC}"
+    echo -e "${BOLD}${CYAN}║════════════════════════════════════════════════════════════║${NC}"
+    echo -e "${BOLD}${CYAN}║${NC} ${BOLD}${YELLOW}          --- MAIN MANAGEMENT OPTIONS ---           ${NC}      ${CYAN}║${NC}"
+    echo -e "${BOLD}${CYAN}║════════════════════════════════════════════════════════════║${NC}"
+    
+    # تنسيق القائمة
+    echo -e "${BOLD}${CYAN}║${NC}  ${BOLD}${YELLOW}[1]${NC} SSH/OVPN MANAGER   ${BOLD}${YELLOW}[4]${NC} TROJAN MANAGER    ${BOLD}${CYAN}║${NC}"
+    echo -e "${BOLD}${CYAN}║${NC}  ${BOLD}${YELLOW}[2]${NC} VMESS MANAGER      ${BOLD}${YELLOW}[5]${NC} SHDWSK MANAGER    ${BOLD}${CYAN}║${NC}"
+    echo -e "${BOLD}${CYAN}║${NC}  ${BOLD}${YELLOW}[3]${NC} VLESS MANAGER      ${BOLD}${YELLOW}[6]${NC} OTHER SETTINGS    ${BOLD}${CYAN}║${NC}"
+    
+    show_footer
     echo ""
-    read -n 1 -p "Select From Options [ 1 - 6 ] : " choice
+    read -n 1 -p "Select [1 - 6] : " choice
     echo ""
 
     case $choice in
@@ -81,6 +104,7 @@ while true; do
                 useradd -M -s /bin/false "$uname"
                 echo "$uname:$upass" | chpasswd
                 
+                # حساب تاريخ الانتهاء
                 EXP_DATE=$(date -d "+$udays days" +"%Y-%m-%d" 2>/dev/null || date -v +${udays}d +"%Y-%m-%d" 2>/dev/null)
 
                 clear
@@ -99,6 +123,9 @@ while true; do
                 echo -e "${GREEN}----------------------------------------${NC}"
                 echo -e "${CYAN}--- SSL / TLS PAYLOAD (PORT 443) ---${NC}"
                 echo "GET wss://$DOMAIN/HTTP/1.1[crlf]Host: $DOMAIN[crlf]Upgrade: websocket[crlf][crlf]"
+                echo -e "${GREEN}----------------------------------------${NC}"
+                echo -e "${CYAN}--- DNS / HOST CONFIG ---${NC}"
+                echo "Server IP: $PUBLIC_IP | DNS Host: $DOMAIN"
                 echo -e "${GREEN}========================================${NC}"
             elif [ "$sub" = "2" ]; then
                 read -p "Username to delete: " uname
@@ -235,4 +262,3 @@ while true; do
             ;;
     esac
 done
-EOF
