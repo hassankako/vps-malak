@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v6.1 Masterpiece
+# VERSION: v6.2 Masterpiece
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -31,7 +31,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v6.1 ]            ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v6.2 ]            ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain     :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
@@ -40,11 +40,11 @@ while true; do
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                   --- CONTROL PANEL ---                    ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🔑 Install SSL (Stunnel4) & SSH Manager            ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} ⚡ VMess Manager                                   ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 🚀 VLESS Manager                                   ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} ⚙️ All Ports, Domain & Banner Settings             ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} 🔄 Update Script from Web (GitHub)                 ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🔑 Install SSL, WebSocket & SSH Manager            ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} ⚡ VMess Manager                                   ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 🚀 VLESS Manager                                   ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} ⚙️ All Ports, Domain & Banner Settings             ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} 🔄 Update Script from Web (GitHub)                 ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
     echo -e "${C_WHT}                  Date: $(date '+%Y-%m-%d %H:%M')${C_NC}"
     echo ""
@@ -54,18 +54,18 @@ while true; do
     case $choice in
         1)
             clear
-            echo -e "${C_GRN}--- SSL & SSH MANAGER ---${NC}"
+            echo -e "${C_GRN}--- SSL, WEBSOCKET & SSH MANAGER ---${NC}"
             echo "1. Install & Configure Stunnel4 (SSL Port 443)"
-            echo "2. Add SSH User (with Days & Max Limit)"
-            echo "3. Delete SSH User"
-            echo "4. List Users, Days Left & Active Connections"
-            read -p "Choose [1-4]: " sub
+            echo "2. Install & Configure WebSocket Proxy (Port 80 / 8080)"
+            echo "3. Add SSH / WS User (with Days & Max Limit)"
+            echo "4. Delete SSH User"
+            echo "5. List Users, Days Left & Active Connections"
+            read -p "Choose [1-5]: " sub
             if [ "$sub" = "1" ]; then
                 echo -e "${C_YLW}Installing Stunnel4 and configuring SSL on port 443...${C_NC}"
                 apt-get update -y >/dev/null 2>&1
                 apt-get install stunnel4 ufw iptables -y >/dev/null 2>&1
                 
-                # إعداد ملف تشفير Stunnel4 تلقائياً
                 cat <<EOF > /etc/stunnel/stunnel.conf
 cert = /etc/stunnel/stunnel.pem
 client = no
@@ -77,21 +77,44 @@ accept = 444
 connect = 127.0.0.1:22
 EOF
 
-                # إنشاء شهادة وهمية SSL لتفعيل الخدمة
                 openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj "/C=US/ST=State/L=City/O=Organization/CN=k3ko" -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem >/dev/null 2>&1
 
-                # تفعيل وتشغيل Stunnel4
                 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
                 systemctl restart stunnel4
                 
-                # فتح البورتات في الجدار الناري
                 ufw allow 443/tcp >/dev/null 2>&1
                 ufw allow 22/tcp >/dev/null 2>&1
                 iptables -A INPUT -p tcp --dport 443 -j ACCEPT
                 
-                echo -e "${C_GRN}Stunnel4 (SSL Port 443) Installed & Started Successfully!${C_NC}"
+                echo -e "${C_GRN}Stunnel4 (SSL Port 443) Installed Successfully!${C_NC}"
                 
             elif [ "$sub" = "2" ]; then
+                echo -e "${C_YLW}Installing Python & WebSocket Proxy on Port 80...${C_NC}"
+                apt-get install python3 python3-pip -y >/dev/null 2>&1
+                
+                # إنشاء ملف بايثون لخدمة WebSocket Proxy
+                cat << 'EOF' > /usr/local/bin/ws-proxy.py
+import asyncio
+import websockets
+
+async def echo(websocket, path):
+    async for message in websocket:
+        await websocket.send(message)
+
+start_server = websockets.serve(echo, "0.0.0.0", 80)
+
+asyncio.get_event_loop().run_until_complete(start_server)
+asyncio.get_event_loop().run_forever()
+EOF
+                # تثبيت مكتبة websockets بلغة بايثون
+                pip3 install websockets >/dev/null 2>&1
+                
+                ufw allow 80/tcp >/dev/null 2>&1
+                iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+                
+                echo -e "${C_GRN}WebSocket Proxy Installed Successfully on Port 80!${C_NC}"
+                
+            elif [ "$sub" = "3" ]; then
                 read -p "Enter Username: " uname
                 read -p "Enter Password: " upass
                 read -p "Enter Expiry Days (e.g., 30): " udays
@@ -114,14 +137,15 @@ EOF
                 echo -e "${C_WHT} Host/IP    : ${C_CYN}$PUBLIC_IP${C_NC}"
                 echo -e "${C_WHT} Domain     : ${C_CYN}$DOMAIN${C_NC}"
                 echo -e "${C_WHT} SSL Port   : ${C_GRN}443${C_NC}"
+                echo -e "${C_WHT} WS Port    : ${C_GRN}80${C_NC}"
                 echo -e "${C_GRN}==================================================${C_NC}"
                 
-            elif [ "$sub" = "3" ]; then
+            elif [ "$sub" = "4" ]; then
                 read -p "Username to delete: " uname
                 userdel -r "$uname" 2>/dev/null
                 rm -f "/etc/security/limits.d/$uname.limit" 2>/dev/null
                 echo -e "${C_RED}User deleted successfully.${C_NC}"
-            elif [ "$sub" = "4" ]; then
+            elif [ "$sub" = "5" ]; then
                 clear
                 echo -e "${C_GRN}      SSH USERS, DAYS LEFT & ACTIVE CONNECTIONS      ${C_NC}"
                 echo "-------------------------------------------------------------------"
