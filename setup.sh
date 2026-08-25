@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v5.1 Masterpiece
+# VERSION: v5.2 Masterpiece
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -29,13 +29,11 @@ while true; do
     
     PUBLIC_IP=$(curl -s ifconfig.me || echo "N/A")
     DOMAIN=$(cat /etc/domain 2>/dev/null || echo "$PUBLIC_IP")
-    
-    # حساب عدد المتصلين بطريقة آمنة
     ONLINE_USERS=$(ps -u root | wc -l 2>/dev/null || echo "1")
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v5.1 ]            ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v5.2 ]            ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain     :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
@@ -60,7 +58,7 @@ while true; do
             echo -e "${C_GRN}--- SSH / OVPN MANAGER ---${NC}"
             echo "1. Add SSH User"
             echo "2. Delete SSH User"
-            echo "3. List Users"
+            echo "3. List Users & Online Connections"
             read -p "Choose [1-3]: " sub
             if [ "$sub" = "1" ]; then
                 read -p "Enter Username: " uname
@@ -74,7 +72,23 @@ while true; do
                 read -p "Username to delete: " uname
                 userdel "$uname" && echo -e "${C_RED}User deleted.${C_NC}"
             elif [ "$sub" = "3" ]; then
-                cut -d: -f1 /etc/passwd
+                clear
+                echo -e "${C_YLZ}==================================================${C_NC}"
+                echo -e "${C_GRN}       SSH USERS & ACTIVE CONNECTIONS REPORT      ${C_NC}"
+                echo -e "${C_YLZ}==================================================${C_NC}"
+                printf "${C_CYN}%-20s | %-15s${C_NC}\n" "USERNAME" "ACTIVE CONNECTIONS"
+                echo "--------------------------------------------------"
+                
+                # جلب المستخدمين وفحص عدد المتصلين لكل حساب بدقة
+                for user in $(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd); do
+                    count=$(ps -u "$user" | grep -v "PID" | wc -l)
+                    if [ "$count" -gt 0 ]; then
+                        printf "${C_WHT}%-20s${C_NC} | ${C_GRN}%-15s${C_NC}\n" "$user" "$count Online Device(s)"
+                    else
+                        printf "${C_WHT}%-20s${C_NC} | ${C_RED}%-15s${C_NC}\n" "$user" "Offline (0)"
+                    fi
+                done
+                echo -e "${C_YLZ}==================================================${C_NC}"
             fi
             read -p "Press Enter to continue..."
             ;;
@@ -128,5 +142,5 @@ while true; do
             esac
             read -p "Press Enter to continue..."
             ;;
-    esac
+    es:
 done
