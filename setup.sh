@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v6.0 Masterpiece
+# VERSION: v6.1 Masterpiece
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -31,7 +31,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v6.0 ]            ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v6.1 ]            ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain     :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
@@ -40,7 +40,7 @@ while true; do
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                   --- CONTROL PANEL ---                    ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🔑 Install OpenVPN & SSH Manager                   ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🔑 Install SSL (Stunnel4) & SSH Manager            ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} ⚡ VMess Manager                                   ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 🚀 VLESS Manager                                   ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} ⚙️ All Ports, Domain & Banner Settings             ${C_PRP}║${C_NC}"
@@ -54,25 +54,42 @@ while true; do
     case $choice in
         1)
             clear
-            echo -e "${C_GRN}--- OPENVPN & SSH MANAGER ---${NC}"
-            echo "1. Install / Setup OpenVPN Service on Server"
-            echo "2. Add SSH & OpenVPN User (with Days & Max Limit)"
+            echo -e "${C_GRN}--- SSL & SSH MANAGER ---${NC}"
+            echo "1. Install & Configure Stunnel4 (SSL Port 443)"
+            echo "2. Add SSH User (with Days & Max Limit)"
             echo "3. Delete SSH User"
             echo "4. List Users, Days Left & Active Connections"
             read -p "Choose [1-4]: " sub
             if [ "$sub" = "1" ]; then
-                echo -e "${C_YLW}Installing OpenVPN and configuring ports...${C_NC}"
+                echo -e "${C_YLW}Installing Stunnel4 and configuring SSL on port 443...${C_NC}"
                 apt-get update -y >/dev/null 2>&1
-                apt-get install openvpn iptables ufw -y >/dev/null 2>&1
+                apt-get install stunnel4 ufw iptables -y >/dev/null 2>&1
                 
-                ufw allow 22/tcp >/dev/null 2>&1
-                ufw allow 80/tcp >/dev/null 2>&1
+                # إعداد ملف تشفير Stunnel4 تلقائياً
+                cat <<EOF > /etc/stunnel/stunnel.conf
+cert = /etc/stunnel/stunnel.pem
+client = no
+[dropbear]
+accept = 443
+connect = 127.0.0.1:22
+[openssh]
+accept = 444
+connect = 127.0.0.1:22
+EOF
+
+                # إنشاء شهادة وهمية SSL لتفعيل الخدمة
+                openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj "/C=US/ST=State/L=City/O=Organization/CN=k3ko" -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem >/dev/null 2>&1
+
+                # تفعيل وتشغيل Stunnel4
+                sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
+                systemctl restart stunnel4
+                
+                # فتح البورتات في الجدار الناري
                 ufw allow 443/tcp >/dev/null 2>&1
-                ufw allow 1194/udp >/dev/null 2>&1
+                ufw allow 22/tcp >/dev/null 2>&1
                 iptables -A INPUT -p tcp --dport 443 -j ACCEPT
-                iptables -A INPUT -p udp --dport 1194 -j ACCEPT
                 
-                echo -e "${C_GRN}OpenVPN Service & Ports Installed Successfully!${C_NC}"
+                echo -e "${C_GRN}Stunnel4 (SSL Port 443) Installed & Started Successfully!${C_NC}"
                 
             elif [ "$sub" = "2" ]; then
                 read -p "Enter Username: " uname
@@ -96,8 +113,7 @@ while true; do
                 echo -e "${C_WHT} Max Limit  : ${C_GRN}$ulimit Device(s)${C_NC}"
                 echo -e "${C_WHT} Host/IP    : ${C_CYN}$PUBLIC_IP${C_NC}"
                 echo -e "${C_WHT} Domain     : ${C_CYN}$DOMAIN${C_NC}"
-                echo -e "\n${C_YLW}--- OpenVPN TCP / UDP Payload ---${C_NC}"
-                echo -e "${C_CYN}GET / HTTP/1.1[crlf]Host: $DOMAIN[crlf][crlf]${C_NC}"
+                echo -e "${C_WHT} SSL Port   : ${C_GRN}443${C_NC}"
                 echo -e "${C_GRN}==================================================${C_NC}"
                 
             elif [ "$sub" = "3" ]; then
