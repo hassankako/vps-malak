@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v6.0 Ultimate Masterpiece
+# VERSION: v6.2 Masterpiece with Fast DNS
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -30,35 +30,29 @@ while true; do
     PUBLIC_IP=$(curl -s ifconfig.me || echo "N/A")
     DOMAIN=$(cat /etc/domain 2>/dev/null || echo "$PUBLIC_IP")
     
-    # حساب إحصائيات المستخدمين
     TOTAL_USERS=$(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd | wc -l)
-    ONLINE_COUNT=$(ps -u root | wc -l 2>/dev/null || echo "1")
+    ONLINE_USERS=$(ps -u root | wc -l 2>/dev/null || echo "1")
     
-    # حساب عدد الحسابات المنتهية / المقفلة
     EXPIRED_COUNT=0
     for u in $(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd); do
         l_status=$(passwd -S "$u" 2>/dev/null | awk '{print $2}')
         [ "$l_status" = "L" ] && EXPIRED_COUNT=$((EXPIRED_COUNT + 1))
     done
 
-    # إحصائيات وهمية/حقيقية للبروتوكولات (يمكن ربطها بملفات التخزين الخاصة بك لاحقاً)
     SSH_OVPN_COUNT=$TOTAL_USERS
     VMESS_COUNT=0
     VLESS_COUNT=0
-    TROJAN_COUNT=0
-    SHADOWS_COUNT=0
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v6.0 ]            ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v6.2 ]            ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain     :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• System OS  :${C_NC} ${C_WHT}$SYS_OS${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Uptime Days:${C_NC} ${C_GRN}$VPS_DAYS Days${C_NC}                              ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
-    echo -e "${C_PRP}║${C_NC} ${C_GRN}SSH OVPN: $SSH_OVPN_COUNT${C_NC}  ${C_YLW}VMESS: $VMESS_COUNT${C_NC}  ${C_CYN}VLESS: $VLESS_COUNT${C_NC}                     ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC} ${C_PRP}TROJAN: $TROJAN_COUNT${C_NC}  ${C_BLU}SHADWSK: $SHADOWS_COUNT${C_NC}                          ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC} ${C_GRN}SSH OVPN: $SSH_OVPN_COUNT${C_NC}  ${C_YLW}VMESS: $VMESS_COUNT${C_NC}  ${C_CYN}VLESS: $VLESS_COUNT${C_NC}               ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                   --- CONTROL PANEL ---                    ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
@@ -66,9 +60,9 @@ while true; do
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} ⚡ VMess / VLESS Manager                           ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 📊 Users Report & Expiry Status                    ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} 🛠️ WebSocket & SOCKS Proxies                       ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} ⚙️ All Ports & Settings                            ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} ⚡ Fast DNS & Ports Settings                       ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
-    echo -e "${C_WHT}      [ Online: $ONLINE_COUNT | Total: $TOTAL_USERS | Expired: $EXPIRED_COUNT ]${C_NC}"
+    echo -e "${C_WHT}      [ Online: $ONLINE_USERS | Total: $TOTAL_USERS | Expired: $EXPIRED_COUNT ]${C_NC}"
     echo ""
     read -n 1 -p "Select option [1-5]: " choice
     echo ""
@@ -200,27 +194,41 @@ while true; do
             ;;
         5)
             clear
-            echo -e "${C_YLW}--- ALL PORTS & SETTINGS ---${NC}"
-            echo "1. Open Custom Port"
-            echo "2. View All Open Ports"
-            echo "3. Open All Standard VPN/Proxy Ports"
-            read -p "Choose [1-3]: " s_choice
+            echo -e "${C_YLW}--- FAST DNS & PORTS SETTINGS ---${NC}"
+            echo "1. ⚡ Install Fast DNS (Cloudflare & Google Ultra Speed)"
+            echo "2. Open Custom Port"
+            echo "3. View All Open Ports"
+            echo "4. Open All Standard VPN/Proxy Ports"
+            read -p "Choose [1-4]: " s_choice
             case $s_choice in
                 1)
+                    echo -e "${C_CYN}[*] Applying Ultra Fast DNS to the system...${C_NC}"
+                    # كتابة أسرع خوادم DNS في ملف إعدادات الشبكة للسيرفر
+                    cat <<EOF > /etc/resolv.conf
+nameserver 1.1.1.1
+nameserver 8.8.8.8
+nameserver 1.0.0.1
+nameserver 8.8.4.4
+EOF
+                    # حماية الملف من التعديل التلقائي لتبقى السرعة ثابتة
+                    chattr +i /etc/resolv.conf 2>/dev/null
+                    echo -e "${C_GRN}[+] Fast DNS applied successfully! (Cloudflare & Google Enabled)${C_NC}"
+                    ;;
+                2)
                     read -p "Enter port number: " nport
                     ufw allow "$nport" 2>/dev/null
                     iptables -A INPUT -p tcp --dport "$nport" -j ACCEPT 2>/dev/null
                     echo -e "${C_GRN}Port $nport opened!${C_NC}"
                     ;;
-                2)
+                3)
                     netstat -tuln 2>/dev/null || ss -tuln
                     ;;
-                3)
+                4)
                     for p in 22 80 443 8080 2082 2083 2095 8443; do
                         ufw allow $p 2>/dev/null
                         iptables -A INPUT -p tcp --dport $p -j ACCEPT 2>/dev/null
                     done
-                    echo -e "${C_GRN}All standard ports opened!${C_NC}"
+                    echo -e("${C_GRN}All standard ports opened!${C_NC}")
                     ;;
             esac
             read -p "Press Enter to continue..."
