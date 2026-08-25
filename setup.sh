@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v7.4 Pro Port Info Design
+# VERSION: v7.5 Pro All Ports Auto-Open & Design
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -18,9 +18,6 @@ CONFIG_FILE="/etc/k3ko_settings.conf"
 if [ ! -f "$CONFIG_FILE" ]; then
     echo "DOMAIN=Auto" > "$CONFIG_FILE"
     echo "DNS_DOMAIN=None" >> "$CONFIG_FILE"
-    echo "PORT_SSH=22" >> "$CONFIG_FILE"
-    echo "PORT_SSL=443" >> "$CONFIG_FILE"
-    echo "PORT_WS=80" >> "$CONFIG_FILE"
 fi
 
 LOCKED_BANNER="
@@ -54,7 +51,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}             [ PRO PORT INFO DESIGN v7.4 ]              ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}            [ ALL PORTS AUTO-OPEN v7.5 ]                ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address  :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain      :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
@@ -62,10 +59,10 @@ while true; do
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                   --- MAIN CONTROL ---                     ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 📊 Information Port Service (Ports List)           ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} 👤 SSH Accounts Manager                            ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 🌐 V2Ray Accounts Manager                          ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} ⚙️ Settings & Domain                                 ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🚀 Install & Auto-Open All Ports                   ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} 📊 Information Port Service (Ports List)           ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 👤 SSH Accounts Manager                            ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} 🌐 V2Ray Accounts Manager                          ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} 🚪 Exit                                            ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
     echo ""
@@ -74,6 +71,24 @@ while true; do
 
     case $choice in
         1)
+            clear
+            echo -e "${C_YLW}--- INSTALLING TOOLS & OPENING ALL REQUIRED PORTS ---${C_NC}"
+            apt-get update -y >/dev/null 2>&1
+            apt-get install ufw iptables -y >/dev/null 2>&1
+            
+            # فتح كافة البورتات المذكورة في القائمة تلقائياً في جدار الحماية UFW
+            echo -e "${C_CYN}Opening ports in firewall (UFW)...${C_NC}"
+            PORTS_TO_OPEN=(22 80 81 109 143 442 443 53 88 1194 2200 7100 7200 7300 8080 8880)
+            for p in "${PORTS_TO_OPEN[@]}"; do
+                ufw allow "$p" >/dev/null 2>&1
+                ufw allow "$p/udp" >/dev/null 2>&1
+            done
+            ufw --force enable >/dev/null 2>&1
+            
+            echo -e "${C_GRN}All Ports Have Been Successfully Opened & Configured!${C_NC}"
+            read -p "Press Enter to continue..."
+            ;;
+        2)
             clear
             echo -e "\n${C_WHT}\t┌──────────────────────────────────────────────┐${C_NC}"
             echo -e "\t│${C_RED}         » INFORMATION PORT SERVICE «         ${C_WHT}│${C_NC}"
@@ -111,20 +126,15 @@ while true; do
             echo ""
             read -p "Press Enter to return to main menu..."
             ;;
-        2)
+        3)
             clear
             echo -e "${C_GRN}SSH Manager Menu (Coming soon)${C_NC}"
             read -p "Press Enter to continue..."
             ;;
-        3)
-            clear
-            echo -e "${C_GRN}V2Ray Manager Menu (Coming soon)${C_NC}"
-            read -p "Press Enter to continue..."
-            ;;
         4)
             clear
-            echo -e "${C_GRN}Settings Menu (Coming soon)${C_NC}"
-            read -p "Press Enter to continue..."
+            echo -e "${C_GRN}V2Ray Manager Menu (Coming soon)${C_NC}"
+            read -p "Press `Enter` to continue..."
             ;;
         5)
             clear
