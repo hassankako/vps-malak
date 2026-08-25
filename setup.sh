@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v5.6 Masterpiece
+# VERSION: v5.7 Masterpiece
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -31,7 +31,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v5.6 ]            ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v5.7 ]            ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain     :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
@@ -67,11 +67,8 @@ while true; do
                 useradd -M -s /bin/false "$uname" 2>/dev/null
                 echo "$uname:$upass" | chpasswd
                 
-                # حساب تاريخ الانتهاء
                 EXP_DATE=$(date -d "+$udays days" +"%Y-%m-%d" 2>/dev/null || date -v +${udays}d +"%Y-%m-%d" 2>/dev/null)
                 chage -E "$EXP_DATE" "$uname" 2>/dev/null
-                
-                # حفظ الحد الأقصى المسموح للأجهزة في ملف مخصص
                 echo "$ulimit" > "/etc/security/limits.d/$uname.limit" 2>/dev/null
                 
                 echo -e "\n${C_GRN}==================================================${C_NC}"
@@ -100,14 +97,9 @@ while true; do
                 echo "-------------------------------------------------------------------"
                 
                 for user in $(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd); do
-                    # جلب تاريخ انتهاء الحساب
                     exp_date=$(chage -l "$user" 2>/dev/null | grep "Account expires" | cut -d: -f2 | xargs)
                     [ -z "$exp_date" ] || [ "$exp_date" = "never" ] && exp_date="Unlimited"
-                    
-                    # جلب الحد الأقصى المسموح
                     max_limit=$(cat "/etc/security/limits.d/$user.limit" 2>/dev/null || echo "1")
-                    
-                    # حساب عدد المتصلين الفعليين الآن
                     active_count=$(ps -u "$user" | grep -v "PID" | wc -l)
                     
                     if [ "$active_count" -gt 0 ]; then
@@ -147,13 +139,14 @@ while true; do
             ;;
         4)
             clear
-            echo -e "${C_YLW}--- SETTINGS: DOMAIN, BANNER & PORTS ---${NC}"
+            echo -e "${C_YLW}--- SETTINGS: ALL PORTS, DOMAIN & BANNER ---${NC}"
             echo "1. Set / Change Domain"
             echo "2. Set / Change SSH Banner (Welcome Message)"
-            echo "3. Open All Standard VPN Ports (22, 80, 443, 1194, 8080)"
-            echo "4. Open Custom Port"
-            echo "5. View All Open Ports"
-            read -p "Choose [1-5]: " s_choice
+            echo "3. Open ANY Single Port (Custom Port)"
+            echo "4. Open Port Range (e.g., from 1000 to 2000)"
+            echo "5. Open All Standard VPN Ports (22, 80, 443, 1194, 8080...)"
+            echo "6. View All Open Ports"
+            read -p "Choose [1-6]: " s_choice
             case $s_choice in
                 1)
                     read -p "Enter your domain (e.g., example.com): " new_domain
@@ -168,20 +161,30 @@ while true; do
                     echo -e "${C_GRN}SSH Banner updated successfully!${C_NC}"
                     ;;
                 3)
-                    for p in 22 80 443 1194 8080 2082 2083; do
+                    read -p "Enter port number to open (TCP & UDP): " nport
+                    ufw allow "$nport" 2>/dev/null
+                    iptables -A INPUT -p tcp --dport "$nport" -j ACCEPT 2>/dev/null
+                    iptables -A INPUT -p udp --dport "$nport" -j ACCEPT 2>/dev/null
+                    echo -e "${C_GRN}Port $nport opened successfully for TCP & UDP!${C_NC}"
+                    ;;
+                4)
+                    read -p "Enter start port: " sport
+                    read -p "Enter end port: " eport
+                    ufw allow "$sport:$eport/tcp" 2>/dev/null
+                    ufw allow "$sport:$eport/udp" 2>/dev/null
+                    iptables -A INPUT -p tcp --dport "$sport:$eport" -j ACCEPT 2>/dev/null
+                    iptables -A INPUT -p udp --dport "$sport:$eport" -j ACCEPT 2>/dev/null
+                    echo -e "${C_GRN}Ports from $sport to $eport opened successfully!${C_NC}"
+                    ;;
+                5)
+                    for p in 22 80 443 1194 8080 2082 2083 2095 8443 53; do
                         ufw allow $p 2>/dev/null
                         iptables -A INPUT -p tcp --dport $p -j ACCEPT 2>/dev/null
                         iptables -A INPUT -p udp --dport $p -j ACCEPT 2>/dev/null
                     done
-                    echo -e "${C_GRN}All standard VPN ports opened successfully!${C_NC}"
+                    echo -e "${C_GRN}All standard VPN & proxy ports opened successfully!${C_NC}"
                     ;;
-                4)
-                    read -p "Enter port number: " nport
-                    ufw allow "$nport" 2>/dev/null
-                    iptables -A INPUT -p tcp --dport "$nport" -j ACCEPT 2>/dev/null
-                    echo -e "${C_GRN}Port $nport opened!${C_NC}"
-                    ;;
-                5)
+                6)
                     netstat -tuln 2>/dev/null || ss -tuln
                     ;;
             esac
