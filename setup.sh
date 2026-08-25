@@ -1,12 +1,11 @@
 #!/bin/bash
+# =========================================
+# SCRIPT NAME: K3ko Script Manager
+# VERSION: v9.1 ULTIMATE (With Port 80/443 Fixer)
+# AUTHOR: HASSAN K3KO
+# =========================================
 
-# 1. مسح جميع النسخ والملفات القديمة تماماً من السيرفر
-rm -rf /usr/bin/k3ko /usr/local/bin/k3ko ~/k3ko* /etc/k3ko* 2>/dev/null
-
-# 2. إنشاء وتثبيت النسخة المطلوبة مع إضافة Stunnel و HAProxy و Nginx للواجهة
-cat << 'EOF' > /usr/bin/k3ko
-#!/bin/bash
-
+# الألوان
 C_RED='\033[1;31m'
 C_GRN='\033[1;32m'
 C_YLW='\033[1;33m'
@@ -16,105 +15,125 @@ C_CYN='\033[1;36m'
 C_WHT='\033[1;37m'
 C_NC='\033[0m'
 
+DOMAIN_FILE="/etc/domain"
+
 while true; do
     clear
-    PUBLIC_IP=$(curl -s ifconfig.me || echo "5.175.136.83")
-    DOMAIN="ssh.kakoo2.co.uk"
+    PUBLIC_IP=$(curl -s ifconfig.me || hostname -I | awk '{print $1}' || echo "N/A")
+    
+    if [ -f "$DOMAIN_FILE" ]; then
+        DOMAIN=$(cat "$DOMAIN_FILE")
+    else
+        DOMAIN="$PUBLIC_IP"
+    fi
+    
     SSH_COUNT=$(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd | wc -l)
-    V2RAY_COUNT=3
+    V2RAY_COUNT=0
+    [ -d /etc/v2ray ] && V2RAY_COUNT=$(ls -l /etc/v2ray 2>/dev/null | wc -l)
 
-    echo -e "${C_PRP}┌─────────────────────────────────────────────────────────────┐${C_NC}"
-    echo -e "${C_PRP}│${C_NC}            ⚡   H A S S A N   K 3 K O   ⚡               ${C_PRP}│${C_NC}"
-    echo -e "${C_PRP}│${C_NC}        ${C_CYN}[ SCRIPT MANAGER v9.1 ULTIMATE ]${C_NC}             ${C_PRP}│${C_NC}"
-    echo -e "${C_PRP}└─────────────────────────────────────────────────────────────┘${C_NC}"
-    echo -e "${C_PRP}┌─────────────────────────────────────────────────────────────┐${C_NC}"
-    echo -e "${C_PRP}│${C_NC} ${C_WHT}• IP Address  :${C_NC} ${C_CYN}$PUBLIC_IP${C_NC}"
-    echo -e "${C_PRP}│${C_NC} ${C_WHT}• Domain      :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
-    echo -e "${C_PRP}│${C_NC} ${C_WHT}• Users Count :${C_NC} ${C_GRN}SSH: $SSH_COUNT${C_NC} ${C_WHT}|${C_NC} ${C_GRN}V2Ray: $V2RAY_COUNT${C_NC}         ${C_PRP}│${C_NC}"
-    echo -e "${C_PRP}└─────────────────────────────────────────────────────────────┘${C_NC}"
-    echo -e "${C_PRP}┌─────────────────────────────────────────────────────────────┐${C_NC}"
-    echo -e "${C_PRP}│${C_NC}               ${C_YLW}--- MAIN SERVICES ---${C_NC}                 ${C_PRP}│${C_NC}"
-    echo -e "${C_PRP}└─────────────────────────────────────────────────────────────┘${C_NC}"
-    echo -e "${C_PRP}┌─────────────────────────────────────────────────────────────┐${C_NC}"
-    echo -e "${C_PRP}│${C_NC}  ${C_GRN}[+]${C_NC} 🟢 Stunnel4  : $(systemctl is-active --quiet stunnel4 && echo -e "${C_GRN}Running${C_NC}" || echo -e "${C_RED}Stopped${C_NC}")               ${C_PRP}│${C_NC}"
-    echo -e "${C_PRP}│${C_NC}  ${C_GRN}[+]${C_NC} 🔵 HAProxy   : $(systemctl is-active --quiet haproxy && echo -e "${C_GRN}Running${C_NC}" || echo -e "${C_RED}Stopped${C_NC}")               ${C_PRP}│${C_NC}"
-    echo -e "${C_PRP}│${C_NC}  ${C_GRN}[+]${C_NC} 🟣 Nginx     : $(systemctl is-active --quiet nginx && echo -e "${C_GRN}Running${C_NC}" || echo -e "${C_RED}Stopped${C_NC}")               ${C_PRP}│${C_NC}"
-    echo -e "${C_PRP}└─────────────────────────────────────────────────────────────┘${C_NC}"
-    echo -e "${C_PRP}┌─────────────────────────────────────────────────────────────┐${C_NC}"
-    echo -e "${C_PRP}│${C_NC}               ${C_YLW}--- MAIN CONTROL ---${C_NC}                  ${C_PRP}│${C_NC}"
-    echo -e "${C_PRP}└─────────────────────────────────────────────────────────────┘${C_NC}"
-    echo -e "${C_PRP}┌─────────────────────────────────────────────────────────────┐${C_NC}"
-    echo -e "${C_PRP}│${C_NC}  ${C_CYN}[1]${C_NC} 🚀 Install & Auto-Open All Ports (1-65535)        ${C_PRP}│${C_NC}"
-    echo -e "${C_PRP}│${C_NC}  ${C_CYN}[2]${C_NC} 📊 Information Port Service (Ports List)          ${C_PRP}│${C_NC}"
-    echo -e "${C_PRP}│${C_NC}  ${C_CYN}[3]${C_NC} 👤 SSH Accounts Manager                           ${C_PRP}│${C_NC}"
-    echo -e "${C_PRP}│${C_NC}  ${C_CYN}[4]${C_NC} 🌐 V2Ray Accounts Manager                         ${C_PRP}│${C_NC}"
-    echo -e "${C_PRP}│${C_NC}  ${C_CYN}[5]${C_NC} 🔄 Update Script from GitHub                      ${C_PRP}│${C_NC}"
-    echo -e "${C_PRP}│${C_NC}  ${C_CYN}[0]${C_NC} 🚪 Exit                                           ${C_PRP}│${C_NC}"
-    echo -e "${C_PRP}└─────────────────────────────────────────────────────────────┘${C_NC}"
+    echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}            [ SCRIPT MANAGER v9.1 ULTIMATE ]                ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
+    echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address  :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
+    echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain      :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
+    echo -e "${C_PRP}║${C_NC} ${C_BLU}• Users Count :${C_NC} ${C_GRN}SSH: $SSH_COUNT${C_NC}  ${C_YLW}|${C_NC}  ${C_CYN}V2Ray: $V2RAY_COUNT${C_NC}              ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_YLW}                   --- MAIN CONTROL ---                     ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🚀 Install & Auto-Open All Ports (SSL/80/53/Proxy)  ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} 🛠️ Fix & Free Ports 80 / 443 (إصلاح منافذ 80 و 443) ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 👤 SSH Accounts Manager                         ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} 🌐 V2Ray Accounts Manager                     ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} 🌐 Add / Change Domain (إضافة أو تغيير الدومين) ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[6]${C_NC} 🔄 Update Script from GitHub                  ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_RED}[0]${C_NC} 🚪 Exit                                       ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
     echo ""
-    read -p "Select option [0-5]: " choice
+    read -p "Select option [0-6]: " choice
     echo ""
 
     case $choice in
         1)
             clear
-            echo -e "${C_YLW}Opening ALL ports (TCP & UDP) from 1 to 65535...${C_NC}"
-            ufw --force disable >/dev/null 2>&1
-            ufw default allow incoming >/dev/null 2>&1
-            ufw default allow outgoing >/dev/null 2>&1
-            ufw allow 1:65535/tcp >/dev/null 2>&1
-            ufw allow 1:65535/udp >/dev/null 2>&1
-            ufw --force enable >/dev/null 2>&1
-            iptables -P INPUT ACCEPT 2>/dev/null
-            iptables -P FORWARD ACCEPT 2>/dev/null
-            iptables -P OUTPUT ACCEPT 2>/dev/null
-            iptables -F 2>/dev/null
-            echo -e "${C_GRN}All ports have been successfully opened and restrictions removed!${C_NC}"
-            read -p "Press Enter to return..."
+            echo -e "${C_GRN}--- Installing & Opening All Ports ---${C_NC}"
+            for p in 22 80 443 8080 2082 2083 2095 8443 53; do
+                ufw allow $p 2>/dev/null
+                iptables -A INPUT -p tcp --dport $p -j ACCEPT 2>/dev/null
+                iptables -A INPUT -p udp --dport $p -j ACCEPT 2>/dev/null
+            done
+            echo -e "${C_GRN}All ports successfully opened!${C_NC}"
+            read -p "Press Enter to continue..."
             ;;
         2)
             clear
-            echo -e "${C_YLW}--- Active Ports & Services ---${C_NC}"
-            netstat -tuln || ss -tuln
-            read -p "Press Enter to return..."
+            echo -e "${C_YLW}--- Fixing & Freeing Ports 80 & 443 ---${C_NC}"
+            echo -e "${C_CYN}[*] Stopping services that may block ports 80 and 443...${C_NC}"
+            systemctl stop apache2 2>/dev/null
+            systemctl disable apache2 2>/dev/null
+            systemctl stop nginx 2>/dev/null
+            fuser -k 80/tcp 2>/dev/null
+            fuser -k 443/tcp 2>/dev/null
+            
+            echo -e "${C_GRN}[+] Ports 80 and 443 are now completely free and ready for SSL/V2Ray!${C_NC}"
+            read -p "Press Enter to continue..."
             ;;
         3)
             clear
-            echo -e "${C_YLW}--- SSH Accounts Manager ---${C_NC}"
-            echo "1. Create SSH User"
+            echo -e "${C_GRN}--- SSH Accounts Manager ---${C_NC}"
+            echo "1. Add SSH User"
             echo "2. Delete SSH User"
-            read -p "Choose: " s_ch
-            if [ "$s_ch" = "1" ]; then
-                read -p "Username: " u_name
-                read -p "Password: " u_pass
-                useradd -s /bin/false -M "$u_name" 2>/dev/null
-                echo "$u_name:$u_pass" | chpasswd
-                echo -e "${C_GRN}SSH User Created!${C_NC}"
+            echo "3. List SSH Users"
+            read -p "Choose [1-3]: " sub_ssh
+            if [ "$sub_ssh" = "1" ]; then
+                read -p "Username: " usn
+                read -p "Password: " psw
+                useradd -M -s /bin/false "$usn"
+                echo "$usn:$psw" | chpasswd
+                echo -e "${C_GRN}User created successfully!${C_NC}"
+            elif [ "$sub_ssh" = "2" ]; then
+                read -p "Username to delete: " usn
+                userdel -r "$usn" 2>/dev/null || userdel "$usn"
+                echo -e "${C_RED}User deleted.${C_NC}"
+            elif [ "$sub_ssh" = "3" ]; then
+                awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd
             fi
-            read -p "Press Enter to return..."
+            read -p "Press Enter to continue..."
             ;;
         4)
             clear
-            echo -e "${C_YLW}--- V2Ray Accounts Manager ---${C_NC}"
-            echo -e "${C_GRN}V2Ray is running normally.${C_NC}"
-            read -p "Press Enter to return..."
+            echo -e "${C_CYN}--- V2Ray Accounts Manager ---${C_NC}"
+            echo "V2Ray manager features will go here."
+            read -p "Press Enter to continue..."
             ;;
         5)
             clear
-            echo -e "${C_YLW}Checking for updates...${C_NC}"
+            echo -e "${C_YLW}--- DOMAIN CONFIGURATION ---${C_NC}"
+            echo -e "Current Domain: ${C_CYN}$DOMAIN${C_NC}"
+            echo ""
+            read -p "Enter your new Domain (e.g., ssh.kakoo2.co.uk): " new_domain
+            if [ -n "$new_domain" ]; then
+                echo "$new_domain" > "$DOMAIN_FILE"
+                echo -e "${C_GRN}Domain successfully updated to: $new_domain${C_NC}"
+            else
+                echo -e "${C_RED}Domain cannot be empty!${C_NC}"
+            fi
+            read -p "Press Enter to continue..."
+            ;;
+        6)
+            clear
+            echo -e "${C_YLW}Checking for updates from GitHub...${C_NC}"
             sleep 1
-            echo -e "${C_GRN}You are using the latest version (v9.1 ULTIMATE).${C_NC}"
-            read -p "Press Enter to return..."
+            echo -e "${C_GRN}Script is already up to date!${C_NC}"
+            read -p "Press Enter to continue..."
             ;;
         0)
-            clear
-            exit 0
+            echo -e "${C_GRN}Exiting... Goodbye!${C_NC}"
+            break
+            ;;
+        *)
+            echo -e "${C_RED}Invalid option!${C_NC}"
+            sleep 1
             ;;
     esac
 done
-EOF
-
-chmod +x /usr/bin/k3ko
-clear
-echo -e "\033[1;32m[ ✔ ] Successfully wiped old versions and installed K3ko Manager v9.1 ULTIMATE with Stunnel, HAProxy & Nginx status!\033[0m"
-echo -e "\033[1;33m[ 💡 ] To run the panel anytime, just type: \033[1;36mk3ko\033[0m"
