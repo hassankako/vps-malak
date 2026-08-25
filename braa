@@ -1,0 +1,76 @@
+#!/bin/bash
+
+# جلب معلومات النظام الحقيقية
+UPTIME=$(uptime -p | sed 's/up //')
+IP_ADDR=$(hostname -I | awk '{print $1}')
+# جلب الدولة بناءً على الآبي (افتراضي أو باستخدام خدمة سريعة)
+COUNTRY="Germany" 
+DOMAIN=$(hostname -f)
+RAM_TOTAL=$(free -m | awk '/Mem:/ {print $2}')
+RAM_USED=$(free -m | awk '/Mem:/ {print $3}')
+RAM_USAGE="${RAM_USED} MB / ${RAM_TOTAL} MB"
+
+clear
+echo -e "\033[1;36m----------------------------------------\033[0m"
+echo -e "\033[1;33m       ★ VPS CONTROL PANEL :       \033[0m"
+echo -e "\033[1;36m----------------------------------------\033[0m"
+echo -e "\033[1;32mSYSTEM INFORMATION\033[0m"
+echo -e "\033[1;36m----------------------------------------\033[0m"
+echo -e " * Uptime     : \033[1;32m$UPTIME\033[0m"
+echo -e " * IP Address : \033[1;32m$IP_ADDR\033[0m"
+echo -e " * Country    : \033[1;32m$COUNTRY\033[0m"
+echo -e " * Domain     : \033[1;32m$DOMAIN\033[0m"
+echo -e " * RAM Usage  : \033[1;32m$RAM_USAGE\033[0m"
+echo -e "\033[1;36m----------------------------------------\033[0m"
+echo -e "\033[1;32mSERVICE MENU\033[0m"
+echo -e "\033[1;36m----------------------------------------\033[0m"
+echo -e " [1] SSH                [5] SHADOWSOCKS WS"
+echo -e " [2] VMESS              [6] SETTINGS"
+echo -e " [3] VLESS              [7] CHECK RUNNING"
+echo -e " [4] TROJAN             [8] CLEAR RAM"
+echo -e "\033[1;36m----------------------------------------\033[0m"
+echo ""
+echo -e " [9] REBOOT SERVER"
+echo -e " [10] EXIT"
+echo ""
+echo -n "Select menu : "
+read -r menu
+
+case $menu in
+    1)
+        echo "Running SSH configuration..."
+        ;;
+    2)
+        echo "Running VMESS configuration..."
+        ;;
+    3)
+        echo "Running VLESS configuration..."
+        ;;
+    4)
+        echo "Running TROJAN configuration..."
+        ;;
+    5)
+        echo "Running SHADOWSOCKS WS..."
+        ;;
+    6)
+        echo "Opening Settings..."
+        ;;
+    7)
+        echo "Checking running services..."
+        ;;
+    8)
+        echo "Clearing RAM..."
+        sync && echo 3 > /proc/sys/vm/drop_caches
+        echo "RAM Cleared successfully."
+        ;;
+    9)
+        echo "Rebooting server..."
+        reboot
+        ;;
+    10)
+        exit 0
+        ;;
+    *)
+        echo "Invalid option, please try again."
+        ;;
+esac
