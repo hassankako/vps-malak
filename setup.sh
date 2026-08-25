@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v6.3 Masterpiece with Slow DNS & SSH
+# VERSION: v6.3 Masterpiece with Reboot
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -56,11 +56,11 @@ while true; do
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                   --- CONTROL PANEL ---                    ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🔑 SSH / OVPN & Slow DNS Manager                   ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🔑 SSH / OVPN Manager                              ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} ⚡ VMess / VLESS Manager                           ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 📊 Users Report & Expiry Status                    ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} 🛠️ WebSocket & SOCKS Proxies                       ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} ⚡ Fast DNS & Ports Settings                       ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} ⚡ Fast DNS, Ports & Server Reboot                 ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
     echo -e "${C_WHT}      [ Online: $ONLINE_USERS | Total: $TOTAL_USERS | Expired: $EXPIRED_COUNT ]${C_NC}"
     echo ""
@@ -70,12 +70,11 @@ while true; do
     case $choice in
         1)
             clear
-            echo -e "${C_GRN}--- SSH / OVPN & SLOW DNS MANAGER ---${NC}"
-            echo "1. Add Standard SSH User"
-            echo "2. Add SSH User with Slow DNS (Tunnel)"
-            echo "3. Delete SSH User"
-            echo "4. Edit Existing User (Password / Expiry / Limit)"
-            read -p "Choose [1-4]: " sub
+            echo -e "${C_GRN}--- SSH / OVPN MANAGER ---${NC}"
+            echo "1. Add SSH User"
+            echo "2. Delete SSH User"
+            echo "3. Edit Existing User (Password / Expiry / Limit)"
+            read -p "Choose [1-3]: " sub
             if [ "$sub" = "1" ]; then
                 read -p "Enter Username: " uname
                 read -p "Enter Password: " upass
@@ -86,30 +85,9 @@ while true; do
                 chage -E "$EXP_DATE" "$uname" 2>/dev/null
                 echo -e "${C_GRN}User $uname created successfully! Expires on: $EXP_DATE${C_NC}"
             elif [ "$sub" = "2" ]; then
-                read -p "Enter Username for Slow DNS: " uname
-                read -p "Enter Password: " upass
-                read -p "Enter Expiry Days: " udays
-                read -p "Enter your Slow DNS Nameserver (e.g., ns.yourdomain.com): " ns_domain
-                
-                useradd -M -s /bin/false "$uname"
-                echo "$uname:$upass" | chpasswd
-                EXP_DATE=$(date -d "+$udays days" +"%Y-%m-%d" 2>/dev/null || date -v +${udays}d +"%Y-%m-%d" 2>/dev/null)
-                chage -E "$EXP_DATE" "$uname" 2>/dev/null
-                
-                clear
-                echo -e "${C_YLW}==================================================${C_NC}"
-                echo -e "${C_GRN}       SLOW DNS & SSH ACCOUNT CREATED             ${C_NC}"
-                echo -e "${C_YLW}==================================================${C_NC}"
-                echo -e "${C_CYN} Host/IP      :${C_NC} $PUBLIC_IP"
-                echo -e "${C_CYN} Nameserver   :${C_NC} $ns_domain"
-                echo -e "${C_CYN} Username     :${C_NC} $uname"
-                echo -e "${C_CYN} Password     :${C_NC} $upass"
-                echo -e "${C_CYN} Expires on   :${C_NC} $EXP_DATE"
-                echo -e "${C_YLW}==================================================${C_NC}"
-            elif [ "$sub" = "3" ]; then
                 read -p "Username to delete: " uname
                 userdel "$uname" && echo -e "${C_RED}User deleted.${C_NC}"
-            elif [ "$sub" = "4" ]; then
+            elif [ "$sub" = "3" ]; then
                 read -p "Enter Username to Edit: " euser
                 if id "$euser" &>/dev/null; then
                     while true; do
@@ -216,12 +194,13 @@ while true; do
             ;;
         5)
             clear
-            echo -e "${C_YLW}--- FAST DNS & PORTS SETTINGS ---${NC}"
+            echo -e "${C_YLW}--- FAST DNS, PORTS & SERVER SETTINGS ---${NC}"
             echo "1. ⚡ Install Fast DNS (Cloudflare & Google Ultra Speed)"
             echo "2. Open Custom Port"
             echo "3. View All Open Ports"
             echo "4. Open All Standard VPN/Proxy Ports"
-            read -p "Choose [1-4]: " s_choice
+            echo "5. 🔄 Reboot Server (إعادة إقلاع الخادم)"
+            read -p "Choose [1-5]: " s_choice
             case $s_choice in
                 1)
                     echo -e "${C_CYN}[*] Applying Ultra Fast DNS to the system...${C_NC}"
@@ -249,6 +228,16 @@ EOF
                         iptables -A INPUT -p tcp --dport $p -j ACCEPT 2>/dev/null
                     done
                     echo -e "${C_GRN}All standard ports opened!${C_NC}"
+                    ;;
+                5)
+                    echo -e "${C_RED}Warning: This will restart the entire VPS!${C_NC}"
+                    read -p "Are you sure you want to reboot? [y/N]: " confirm
+                    if [[ "$confirm" =~ ^[Yy]$ ]]; then
+                        echo -e "${C_YLW}Rebooting server now... Goodbye!${C_NC}"
+                        reboot
+                    else
+                        echo -e "${C_GRN}Reboot cancelled.${C_NC}"
+                    fi
                     ;;
             esac
             read -p "Press Enter to continue..."
