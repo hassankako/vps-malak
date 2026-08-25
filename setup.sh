@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v7.2 Separated SSH & V2Ray Management
+# VERSION: v7.3 All Ports Integrated & Auto-Open
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -15,7 +15,18 @@ C_WHT='\033[1;37m'
 C_NC='\033[0m'
 
 CONFIG_FILE="/etc/k3ko_settings.conf"
-[ ! -f "$CONFIG_FILE" ] && echo "DOMAIN=Auto" > "$CONFIG_FILE" && echo "DNS_DOMAIN=None" >> "$CONFIG_FILE" && echo "PORT_SSH=22" >> "$CONFIG_FILE" && echo "PORT_SSL=443" >> "$CONFIG_FILE" && echo "PORT_WS=80" >> "$CONFIG_FILE"
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "DOMAIN=Auto" > "$CONFIG_FILE"
+    echo "DNS_DOMAIN=None" >> "$CONFIG_FILE"
+    echo "PORT_SSH=22" >> "$CONFIG_FILE"
+    echo "PORT_SSL=443" >> "$CONFIG_FILE"
+    echo "PORT_WS=80" >> "$CONFIG_FILE"
+    echo "PORT_WS2=8080" >> "$CONFIG_FILE"
+    echo "PORT_CF1=2053" >> "$CONFIG_FILE"
+    echo "PORT_CF2=2083" >> "$CONFIG_FILE"
+    echo "PORT_CF3=2096" >> "$CONFIG_FILE"
+    echo "PORT_XRAY=8443" >> "$CONFIG_FILE"
+fi
 
 LOCKED_BANNER="
 ════════════════════════════════════════════════════════════
@@ -49,7 +60,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}             [ SEPARATED MANAGER v7.2 ]                 ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}             [ ALL PORTS MANAGER v7.3 ]                 ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address  :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain / DNS:${C_NC} ${C_CYN}$DOMAIN${C_NC} | ${C_YLW}$SAVED_DNS${C_NC}"
@@ -57,10 +68,10 @@ while true; do
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                   --- MAIN CONTROL ---                     ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🚀 Install Core Protocols (SSL, WS, Xray)          ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🚀 Install Core Protocols & Open All Ports         ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} 👤 SSH Accounts Manager (Create, Delete, Online)   ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 🌐 V2Ray Accounts Manager (Create, Delete, List)   ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} ⚙️ Settings (Domain, DNS, Ports, Locked Banner)    ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} ⚙️ Settings (Domain, DNS, All Ports, Locked Banner) ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} 🔄 Update Script from Web (GitHub)                 ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
     echo ""
@@ -70,13 +81,24 @@ while true; do
     case $choice in
         1)
             clear
-            echo -e "${C_YLW}--- INSTALLING SERVICES ---${C_NC}"
+            echo -e "${C_YLW}--- INSTALLING SERVICES & OPENING ALL PORTS ---${C_NC}"
             apt-get update -y >/dev/null 2>&1
             apt-get install stunnel4 python3 python3-pip ufw iptables -y >/dev/null 2>&1
             
+            # فتح جميع البورتات تلقائياً في جدار الحماية UFW
+            ufw allow 22/tcp >/dev/null 2>&1
+            ufw allow 80/tcp >/dev/null 2>&1
+            ufw allow 443/tcp >/dev/null 2>&1
+            ufw allow 8080/tcp >/dev/null 2>&1
+            ufw allow 8880/tcp >/dev/null 2>&1
+            ufw allow 2053/tcp >/dev/null 2>&1
+            ufw allow 2083/tcp >/dev/null 2>&1
+            ufw allow 2096/tcp >/dev/null 2>&1
+            ufw allow 8443/tcp >/dev/null 2>&1
+            ufw --force enable >/dev/null 2>&1
+
             P_SSL=$(grep "PORT_SSL=" "$CONFIG_FILE" | cut -d= -f2)
             P_SSH=$(grep "PORT_SSH=" "$CONFIG_FILE" | cut -d= -f2)
-            P_WS=$(grep "PORT_WS=" "$CONFIG_FILE" | cut -d= -f2)
 
             cat <<EOF > /etc/stunnel/stunnel.conf
 cert = /etc/stunnel/stunnel.pem
@@ -102,7 +124,7 @@ EOF
             pip3 install websockets >/dev/null 2>&1
             bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install >/dev/null 2>&1
 
-            echo -e "${C_GRN}Services Installed Successfully!${C_NC}"
+            echo -e "${C_GRN}All Services Installed & All Ports Opened Successfully!${C_NC}"
             read -p "Press Enter to continue..."
             ;;
         2)
@@ -264,11 +286,11 @@ EOF
             while true; do
                 clear
                 echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
-                echo -e "${C_PRP}║${C_NC}${C_YLW}               --- ALL-IN-ONE SETTINGS ---                  ${C_NC}${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}║${C_NC}${C_YLW}               --- ALL PORTS SETTINGS ---                   ${C_NC}${C_PRP}║${C_NC}"
                 echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
                 echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} Set / Change Main Domain                           ${C_PRP}║${C_NC}"
                 echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} Set / Change DNS Domain (Cloudflare/Subdomain)     ${C_PRP}║${C_NC}"
-                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} Setup & Configure Ports (SSH, SSL, WS)             ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} Configure All Ports (SSH, SSL, WS, CF, Xray)       ${C_PRP}║${C_NC}"
                 echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} View Locked Official Banner                      ${C_PRP}║${C_NC}"
                 echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} Return to Main Menu                              ${C_PRP}║${C_NC}"
                 echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
@@ -291,24 +313,44 @@ EOF
                         ;;
                     3)
                         clear
-                        echo -e "${C_CYN}--- PORTS CONFIGURATION ---${C_NC}"
-                        curr_ssh=$(grep "PORT_SSH=" "$CONFIG_FILE" | cut -d= -f2)
-                        curr_ssl=$(grep "PORT_SSL=" "$CONFIG_FILE" | cut -d= -f2)
-                        curr_ws=$(grep "PORT_WS=" "$CONFIG_FILE" | cut -d= -f2)
+                        echo -e "${C_CYN}--- ALL PORTS CONFIGURATION ---${C_NC}"
+                        c_ssh=$(grep "PORT_SSH=" "$CONFIG_FILE" | cut -d= -f2)
+                        c_ssl=$(grep "PORT_SSL=" "$CONFIG_FILE" | cut -d= -f2)
+                        c_ws=$(grep "PORT_WS=" "$CONFIG_FILE" | cut -d= -f2)
+                        c_ws2=$(grep "PORT_WS2=" "$CONFIG_FILE" | cut -d= -f2)
+                        c_cf1=$(grep "PORT_CF1=" "$CONFIG_FILE" | cut -d= -f2)
+                        c_cf2=$(grep "PORT_CF2=" "$CONFIG_FILE" | cut -d= -f2)
+                        c_cf3=$(grep "PORT_CF3=" "$CONFIG_FILE" | cut -d= -f2)
+                        c_xray=$(grep "PORT_XRAY=" "$CONFIG_FILE" | cut -d= -f2)
                         
-                        echo -e "Current SSH Port : ${C_YLW}$curr_ssh${C_NC}"
-                        echo -e "Current SSL Port : ${C_YLW}$curr_ssl${C_NC}"
-                        echo -e "Current WS Port  : ${C_YLW}$curr_ws${C_NC}"
-                        echo "-----------------------------------"
-                        read -p "Enter new SSH Port (or press enter to keep): " new_ssh
-                        read -p "Enter new SSL Port (or press enter to keep): " new_ssl
-                        read -p "Enter new WS Port (or press enter to keep): " new_ws
+                        echo -e "SSH Port      : ${C_YLW}$c_ssh${C_NC}"
+                        echo -e "SSL Port      : ${C_YLW}$c_ssl${C_NC}"
+                        echo -e "WS Port 1     : ${C_YLW}$c_ws${C_NC}"
+                        echo -e "WS Port 2     : ${C_YLW}$c_ws2${C_NC}"
+                        echo -e "Cloudflare 1  : ${C_YLW}$c_cf1${C_NC}"
+                        echo -e "Cloudflare 2  : ${C_YLW}$c_cf2${C_NC}"
+                        echo -e "Cloudflare 3  : ${C_YLW}$c_cf3${C_NC}"
+                        echo -e "Xray Port     : ${C_YLW}$c_xray${C_NC}"
+                        echo "--------------------------------------------------------"
+                        read -p "Enter new SSH Port (Enter to keep): " n_ssh
+                        read -p "Enter new SSL Port (Enter to keep): " n_ssl
+                        read -p "Enter new WS Port 1 (Enter to keep): " n_ws
+                        read -p "Enter new WS Port 2 (Enter to keep): " n_ws2
+                        read -p "Enter new CF Port 1 (Enter to keep): " n_cf1
+                        read -p "Enter new CF Port 2 (Enter to keep): " n_cf2
+                        read -p "Enter new CF Port 3 (Enter to keep): " n_cf3
+                        read -p "Enter new Xray Port (Enter to keep): " n_xray
                         
-                        [ ! -z "$new_ssh" ] && sed -i "/PORT_SSH=/c\PORT_SSH=$new_ssh" "$CONFIG_FILE"
-                        [ ! -z "$new_ssl" ] && sed -i "/PORT_SSL=/c\PORT_SSL=$new_ssl" "$CONFIG_FILE"
-                        [ ! -z "$new_ws" ] && sed -i "/PORT_WS=/c\PORT_WS=$new_ws" "$CONFIG_FILE"
+                        [ ! -z "$n_ssh" ] && sed -i "/PORT_SSH=/c\PORT_SSH=$n_ssh" "$CONFIG_FILE" && ufw allow "$n_ssh"/tcp >/dev/null 2>&1
+                        [ ! -z "$n_ssl" ] && sed -i "/PORT_SSL=/c\PORT_SSL=$n_ssl" "$CONFIG_FILE" && ufw allow "$n_ssl"/tcp >/dev/null 2>&1
+                        [ ! -z "$n_ws" ] && sed -i "/PORT_WS=/c\PORT_WS=$n_ws" "$CONFIG_FILE" && ufw allow "$n_ws"/tcp >/dev/null 2>&1
+                        [ ! -z "$n_ws2" ] && sed -i "/PORT_WS2=/c\PORT_WS2=$n_ws2" "$CONFIG_FILE" && ufw allow "$n_ws2"/tcp >/dev/null 2>&1
+                        [ ! -z "$n_cf1" ] && sed -i "/PORT_CF1=/c\PORT_CF1=$n_cf1" "$CONFIG_FILE" && ufw allow "$n_cf1"/tcp >/dev/null 2>&1
+                        [ ! -z "$n_cf2" ] && sed -i "/PORT_CF2=/c\PORT_CF2=$n_cf2" "$CONFIG_FILE" && ufw allow "$n_cf2"/tcp >/dev/null 2>&1
+                        [ ! -z "$n_cf3" ] && sed -i "/PORT_CF3=/c\PORT_CF3=$n_cf3" "$CONFIG_FILE" && ufw allow "$n_cf3"/tcp >/dev/null 2>&1
+                        [ ! -z "$n_xray" ] && sed -i "/PORT_XRAY=/c\PORT_XRAY=$n_xray" "$CONFIG_FILE" && ufw allow "$n_xray"/tcp >/dev/null 2>&1
                         
-                        echo -e "${C_GRN}Ports updated successfully in configuration file!${C_NC}"
+                        echo -e "${C_GRN}All Ports updated and opened successfully in firewall!${C_NC}"
                         read -p "Press Enter to continue..."
                         ;;
                     4)
