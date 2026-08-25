@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v7.5 Pro All Ports Auto-Open & Design
+# VERSION: v7.6 Pro with Auto-Update from GitHub
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -51,7 +51,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}            [ ALL PORTS AUTO-OPEN v7.5 ]                ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}             [ SCRIPT MANAGER v7.6 ]                    ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address  :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain      :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
@@ -63,10 +63,11 @@ while true; do
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} 📊 Information Port Service (Ports List)           ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 👤 SSH Accounts Manager                            ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} 🌐 V2Ray Accounts Manager                          ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} 🚪 Exit                                            ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} 🔄 Update Script from GitHub                       ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[0]${C_NC} 🚪 Exit                                            ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
     echo ""
-    read -n 1 -p "Select option [1-5]: " choice
+    read -n 1 -p "Select option [0-5]: " choice
     echo ""
 
     case $choice in
@@ -76,7 +77,6 @@ while true; do
             apt-get update -y >/dev/null 2>&1
             apt-get install ufw iptables -y >/dev/null 2>&1
             
-            # فتح كافة البورتات المذكورة في القائمة تلقائياً في جدار الحماية UFW
             echo -e "${C_CYN}Opening ports in firewall (UFW)...${C_NC}"
             PORTS_TO_OPEN=(22 80 81 109 143 442 443 53 88 1194 2200 7100 7200 7300 8080 8880)
             for p in "${PORTS_TO_OPEN[@]}"; do
@@ -134,9 +134,19 @@ while true; do
         4)
             clear
             echo -e "${C_GRN}V2Ray Manager Menu (Coming soon)${C_NC}"
-            read -p "Press `Enter` to continue..."
+            read -p "Press Enter to continue..."
             ;;
         5)
+            clear
+            echo -e "${C_YLW}Updating script from GitHub...${C_NC}"
+            # استبدل الرابط أدناه برابط ملف setup.sh المباشر في حسابك على GitHub
+            wget --no-cache -O setup.sh https://raw.githubusercontent.com/hassankako/vps-malak/main/setup.sh >/dev/null 2>&1
+            chmod +x setup.sh
+            echo -e "${C_GRN}Script updated successfully! Restarting...${C_NC}"
+            sleep 2
+            exec ./setup.sh
+            ;;
+        0)
             clear
             exit 0
             ;;
