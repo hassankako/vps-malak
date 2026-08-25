@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v8.0 Full SSH + FastDNS + Ports
+# VERSION: v8.1 Full SSH + V2Ray + FastDNS
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -51,7 +51,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}             [ SCRIPT MANAGER v8.0 PRO ]                ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}             [ SCRIPT MANAGER v8.1 PRO ]                ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address  :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain      :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
@@ -197,22 +197,44 @@ while true; do
             done
             ;;
         4)
-            clear
-            echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
-            echo -e "${C_PRP}║${C_NC}${C_YLW}               🌐 V2RAY ACCOUNTS MANAGER                    ${C_NC}${C_PRP}║${C_NC}"
-            echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
-            echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} ➕ Create V2Ray (VMess/Vless/Trojan)                 ${C_PRP}║${C_NC}"
-            echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} 🗑️ Delete V2Ray Account                            ${C_PRP}║${C_NC}"
-            echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 📋 List V2Ray Accounts                             ${C_PRP}║${C_NC}"
-            echo -e "${C_PRP}║${C_NC}  ${C_GRN}[0]${C_NC} 🔙 Back to Main Menu                               ${C_PRP}║${C_NC}"
-            echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
-            echo ""
-            read -n 1 -p "Select option [0-3]: " v2ray_choice
-            echo ""
-            if [ "$v2ray_choice" != "0" ]; then
-                echo -e "${C_YLW}V2Ray module feature is ready for your custom deployment!${C_NC}"
-                read -p "Press Enter to continue..."
-            fi
+            while true; do
+                clear
+                echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
+                echo -e "${C_PRP}║${C_NC}${C_YLW}               🌐 V2RAY ACCOUNTS MANAGER                    ${C_NC}${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} ➕ Create V2Ray (VMess/Vless/Trojan)                 ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} 🗑️ Delete V2Ray Account                            ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 📋 List V2Ray Accounts                             ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[0]${C_NC} 🔙 Back to Main Menu                               ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
+                echo ""
+                read -n 1 -p "Select option [0-3]: " v2ray_choice
+                echo ""
+                
+                case $v2ray_choice in
+                    1)
+                        clear
+                        echo -e "${C_YLW}--- CREATE V2RAY ACCOUNT ---${C_NC}"
+                        echo -e "${C_GRN}V2Ray module feature is ready for your custom deployment!${C_NC}"
+                        read -p "Press Enter to continue..."
+                        ;;
+                    2)
+                        clear
+                        echo -e "${C_YLW}--- DELETE V2RAY ACCOUNT ---${C_NC}"
+                        echo -e "${C_GRN}V2Ray module feature is ready for your custom deployment!${C_NC}"
+                        read -p "Press Enter to continue..."
+                        ;;
+                    3)
+                        clear
+                        echo -e "${C_YLW}--- LIST V2RAY ACCOUNTS ---${C_NC}"
+                        echo -e "${C_GRN}V2Ray module feature is ready for your custom deployment!${C_NC}"
+                        read -p "Press Enter to continue..."
+                        ;;
+                    0)
+                        break
+                        ;;
+                esac
+            done
             ;;
         5)
             clear
