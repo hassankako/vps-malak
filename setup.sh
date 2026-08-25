@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v7.1 Professional with Locked Banner
+# VERSION: v7.2 Separated SSH & V2Ray Management
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -17,7 +17,6 @@ C_NC='\033[0m'
 CONFIG_FILE="/etc/k3ko_settings.conf"
 [ ! -f "$CONFIG_FILE" ] && echo "DOMAIN=Auto" > "$CONFIG_FILE" && echo "DNS_DOMAIN=None" >> "$CONFIG_FILE" && echo "PORT_SSH=22" >> "$CONFIG_FILE" && echo "PORT_SSL=443" >> "$CONFIG_FILE" && echo "PORT_WS=80" >> "$CONFIG_FILE"
 
-# تثبيت البانر الرسمي الثابت غير القابل للتعديل
 LOCKED_BANNER="
 ════════════════════════════════════════════════════════════
  💥 ɪɴᴛᴇʀɴᴇᴛ ɪʟɪᴍɪᴛᴀᴅᴏ ☄️
@@ -36,13 +35,6 @@ sed -i '/Banner/d' /etc/ssh/sshd_config 2>/dev/null
 echo "Banner /etc/issue.net" >> /etc/ssh/sshd_config
 systemctl restart ssh 2>/dev/null || systemctl restart sshd 2>/dev/null
 
-INSTALL_DATE_FILE="/etc/vps_install_date.txt"
-[ ! -f "$INSTALL_DATE_FILE" ] && date +%s > "$INSTALL_DATE_FILE"
-INSTALL_TIME=$(cat "$INSTALL_DATE_FILE")
-CURRENT_TIME=$(date +%s)
-VPS_DAYS=$(( (CURRENT_TIME - INSTALL_TIME) / 86400 ))
-[ $VPS_DAYS -lt 0 ] && VPS_DAYS=0
-
 while true; do
     clear
     [ -f /etc/os-release ] && . /etc/os-release && SYS_OS="$NAME" || SYS_OS="Linux"
@@ -52,25 +44,27 @@ while true; do
     SAVED_DNS=$(grep "DNS_DOMAIN=" "$CONFIG_FILE" | cut -d= -f2)
     [ "$SAVED_DOMAIN" = "Auto" ] && DOMAIN="$PUBLIC_IP" || DOMAIN="$SAVED_DOMAIN"
     
-    TOTAL_USERS=$(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd | wc -l)
+    SSH_USERS_COUNT=$(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd | wc -l)
+    V2RAY_USERS_COUNT=$(wc -l < /etc/v2ray_users.txt 2>/dev/null || echo "0")
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}             [ ALL-IN-ONE VPS MANAGER v7.1 ]            ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}             [ SEPARATED MANAGER v7.2 ]                 ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
-    echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
-    echo -e "${C_PRP}║${C_NC} ${C_BLU}• Main Domain:${C_NC} ${C_CYN}$DOMAIN${C_NC} | ${C_BLU}DNS:${C_NC} ${C_YLW}$SAVED_DNS${C_NC}"
-    echo -e "${C_PRP}║${C_NC} ${C_BLU}• Total Users:${C_NC} ${C_GRN}$TOTAL_USERS Active Users${C_NC}                   ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address  :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
+    echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain / DNS:${C_NC} ${C_CYN}$DOMAIN${C_NC} | ${C_YLW}$SAVED_DNS${C_NC}"
+    echo -e "${C_PRP}║${C_NC} ${C_BLU}• Users Count :${C_NC} ${C_GRN}SSH: $SSH_USERS_COUNT${C_NC} | ${C_CYN}V2Ray: $V2RAY_USERS_COUNT${C_NC}       ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                   --- MAIN CONTROL ---                     ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🚀 Install & Setup Core Protocols (SSL, WS, Xray)  ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} 👤 Unified Users Manager (Create, Delete, Stats)   ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} ⚙️ All-In-One Settings (Domain, DNS, Ports, Locked) ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} 🔄 Update Script from Web (GitHub)                 ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🚀 Install Core Protocols (SSL, WS, Xray)          ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} 👤 SSH Accounts Manager (Create, Delete, Online)   ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 🌐 V2Ray Accounts Manager (Create, Delete, List)   ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} ⚙️ Settings (Domain, DNS, Ports, Locked Banner)    ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} 🔄 Update Script from Web (GitHub)                 ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
     echo ""
-    read -n 1 -p "Select option [1-4]: " choice
+    read -n 1 -p "Select option [1-5]: " choice
     echo ""
 
     case $choice in
@@ -115,24 +109,24 @@ EOF
             while true; do
                 clear
                 echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
-                echo -e "${C_PRP}║${C_NC}${C_YLW}              --- UNIFIED USERS MANAGER ---                 ${C_NC}${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}║${C_NC}${C_YLW}               --- SSH ACCOUNTS MANAGER ---                 ${C_NC}${C_PRP}║${C_NC}"
                 echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
-                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} Create New Account (SSH & V2Ray)                   ${C_PRP}║${C_NC}"
-                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} Delete Account                                     ${C_PRP}║${C_NC}"
-                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} Modify User (Password, Days, Max Devices)        ${C_PRP}║${C_NC}"
-                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} List All Users & Check Online Status               ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} Create SSH Account (Username, Password, Days)    ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} Delete SSH Account                                 ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} Modify SSH Account (Password or Expiry Days)       ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} List SSH Users & Check Online Connections          ${C_PRP}║${C_NC}"
                 echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} Return to Main Menu                              ${C_PRP}║${C_NC}"
                 echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
-                read -p "Choose [1-5]: " u_opt
+                read -p "Choose [1-5]: " ssh_opt
                 
-                case $u_opt in
+                case $ssh_opt in
                     1)
                         clear
-                        echo -e "${C_GRN}--- CREATE NEW USER ---${C_NC}"
+                        echo -e "${C_GRN}--- CREATE SSH USER ---${C_NC}"
                         read -p "Enter Username: " uname
                         read -p "Enter Password: " upass
                         read -p "Enter Expiry Days (e.g., 30): " udays
-                        read -p "Enter Max Limit (Devices online): " ulimit
+                        read -p "Enter Max Devices Limit: " ulimit
                         
                         useradd -M -s /bin/false "$uname" 2>/dev/null
                         echo "$uname:$upass" | chpasswd
@@ -140,16 +134,12 @@ EOF
                         chage -E "$EXP_DATE" "$uname" 2>/dev/null
                         echo "$ulimit" > "/etc/security/limits.d/$uname.limit" 2>/dev/null
                         
-                        V_UUID=$(cat /proc/sys/kernel/random/uuid)
-                        echo "$uname:$V_UUID" >> /etc/v2ray_users.txt 2>/dev/null
-                        
                         echo -e "\n${C_GRN}==================================================${C_NC}"
-                        echo -e "${C_YLW}         ACCOUNT CREATED SUCCESSFULLY             ${C_NC}"
+                        echo -e "${C_YLW}           SSH USER CREATED SUCCESSFULLY          ${C_NC}"
                         echo -e "${C_GRN}==================================================${C_NC}"
                         echo -e "${C_WHT} Username   : ${C_CYN}$uname${C_NC}"
                         echo -e "${C_WHT} Password   : ${C_CYN}$upass${C_NC}"
-                        echo -e "${C_WHT} V2Ray UUID : ${C_CYN}$V_UUID${C_NC}"
-                        echo -e "${C_WHT} Valid Days : ${C_GRN}$udays Days (Expires: $EXP_DATE)${C_NC}"
+                        echo -e "${C_WHT} Expires On : ${C_GRN}$EXP_DATE ($udays Days)${C_NC}"
                         echo -e "${C_WHT} Max Limit  : ${C_GRN}$ulimit Device(s)${C_NC}"
                         echo -e "${C_WHT} Host / IP  : ${C_CYN}$PUBLIC_IP${C_NC}"
                         echo -e "${C_GRN}==================================================${C_NC}"
@@ -157,17 +147,16 @@ EOF
                         ;;
                     2)
                         clear
-                        echo -e "${C_RED}--- DELETE USER ---${C_NC}"
+                        echo -e "${C_RED}--- DELETE SSH USER ---${C_NC}"
                         read -p "Enter Username to delete: " uname
                         userdel -r "$uname" 2>/dev/null
                         rm -f "/etc/security/limits.d/$uname.limit" 2>/dev/null
-                        sed -i "/^$uname:/d" /etc/v2ray_users.txt 2>/dev/null
-                        echo -e "${C_RED}User deleted successfully!${C_NC}"
+                        echo -e "${C_RED}SSH User $uname deleted successfully!${C_NC}"
                         read -p "Press Enter to continue..."
                         ;;
                     3)
                         clear
-                        echo -e "${C_YLW}--- MODIFY USER ---${C_NC}"
+                        echo -e "${C_YLW}--- MODIFY SSH USER ---${C_NC}"
                         read -p "Enter Username to modify: " uname
                         if id "$uname" &>/dev/null; then
                             echo "1. Change Password"
@@ -190,8 +179,8 @@ EOF
                         ;;
                     4)
                         clear
-                        TOTAL_CHECK=$(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd | wc -l)
-                        echo -e "${C_GRN}=== TOTAL CREATED USERS: $TOTAL_CHECK ===${C_NC}"
+                        TOTAL_SSH=$(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd | wc -l)
+                        echo -e "${C_GRN}=== TOTAL SSH USERS: $TOTAL_SSH ===${C_NC}"
                         echo "----------------------------------------------------------------------------------"
                         printf "${C_CYN}%-12s | %-12s | %-15s | %-15s${C_NC}\n" "USERNAME" "EXPIRES" "MAX LIMIT" "ONLINE STATUS"
                         echo "----------------------------------------------------------------------------------"
@@ -213,6 +202,65 @@ EOF
             done
             ;;
         3)
+            while true; do
+                clear
+                echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
+                echo -e "${C_PRP}║${C_NC}${C_YLW}              --- V2RAY ACCOUNTS MANAGER ---                ${C_NC}${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} Create V2Ray Account (VMess / VLess UUID)        ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} Delete V2Ray Account                             ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} List All V2Ray Users & UUIDs                     ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} Return to Main Menu                              ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
+                read -p "Choose [1-4]: " v2_opt
+                
+                case $v2_opt in
+                    1)
+                        clear
+                        echo -e "${C_GRN}--- CREATE V2RAY USER ---${C_NC}"
+                        read -p "Enter V2Ray Username: " v_name
+                        V_UUID=$(cat /proc/sys/kernel/random/uuid)
+                        echo "$v_name:$V_UUID" >> /etc/v2ray_users.txt
+                        
+                        echo -e "\n${C_GRN}==================================================${C_NC}"
+                        echo -e "${C_YLW}          V2RAY USER CREATED SUCCESSFULLY         ${C_NC}"
+                        echo -e "${C_GRN}==================================================${C_NC}"
+                        echo -e "${C_WHT} Username   : ${C_CYN}$v_name${C_NC}"
+                        echo -e "${C_WHT} V2Ray UUID : ${C_CYN}$V_UUID${C_NC}"
+                        echo -e "${C_WHT} Host / IP  : ${C_CYN}$PUBLIC_IP${C_NC}"
+                        echo -e "${C_GRN}==================================================${C_NC}"
+                        read -p "Press Enter to continue..."
+                        ;;
+                    2)
+                        clear
+                        echo -e "${C_RED}--- DELETE V2RAY USER ---${C_NC}"
+                        read -p "Enter V2Ray Username to delete: " v_name
+                        sed -i "/^$v_name:/d" /etc/v2ray_users.txt 2>/dev/null
+                        echo -e "${C_RED}V2Ray user deleted successfully!${C_NC}"
+                        read -p "Press Enter to continue..."
+                        ;;
+                    3)
+                        clear
+                        V_COUNT=$(wc -l < /etc/v2ray_users.txt 2>/dev/null || echo "0")
+                        echo -e "${C_GRN}=== TOTAL V2RAY USERS: $V_COUNT ===${C_NC}"
+                        echo "----------------------------------------------------------------------------------"
+                        printf "${C_CYN}%-15s | %-36s${C_NC}\n" "USERNAME" "UUID KEY"
+                        echo "----------------------------------------------------------------------------------"
+                        if [ -f /etc/v2ray_users.txt ]; then
+                            while IFS=':' read -r v_u v_uuid; do
+                                printf "${C_WHT}%-15s${C_NC} | ${C_YLW}%-36s${C_NC}\n" "$v_u" "$v_uuid"
+                            done < /etc/v2ray_users.txt
+                        fi
+                        echo "----------------------------------------------------------------------------------"
+                        read -p "Press Enter to continue..."
+                        ;;
+                    4)
+                        break
+                        ;;
+                esac
+            done
+            ;;
+        4)
             while true; do
                 clear
                 echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
@@ -277,7 +325,7 @@ EOF
                 esac
             done
             ;;
-        4)
+        5)
             clear
             echo -e "${C_YLW}Updating script...${C_NC}"
             wget --no-cache -O setup.sh https://raw.githubusercontent.com/hassankako/vps-malak/main/setup.sh >/dev/null 2>&1
