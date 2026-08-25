@@ -59,7 +59,7 @@ while true; do
     echo -e "${CYAN}2.VMESS MANAGER      5.SHDWSK MANAGER${NC}"
     echo -e "${CYAN}3.VLESS MANAGER      6.OTHER SETTINGS${NC}"
     echo "____________________________________________"
-    echo "              Version script: v3.2 Pro"
+    echo "              Version script: v3.3 Pro"
     echo -e "${RED}|${NC}${GREEN}|${NC}${BLUE}|${NC}${CYAN}|${NC}"
     echo ""
     read -n 1 -p "Select From Options [ 1 - 6 ] : " choice
@@ -81,7 +81,6 @@ while true; do
                 useradd -M -s /bin/false "$uname"
                 echo "$uname:$upass" | chpasswd
                 
-                # حساب تاريخ الانتهاء
                 EXP_DATE=$(date -d "+$udays days" +"%Y-%m-%d" 2>/dev/null || date -v +${udays}d +"%Y-%m-%d" 2>/dev/null)
 
                 clear
@@ -92,7 +91,7 @@ while true; do
                 echo -e "${YELLOW}Domain/DNS  :${NC} $DOMAIN"
                 echo -e "${YELLOW}Username    :${NC} $uname"
                 echo -e "${YELLOW}Password    :${NC} $upass"
-                echo -e "${YELLOW}Ports       :${NC} SSH: 22, 80, 443"
+                echo -e "${YELLOW}Ports       :${NC} SSH: 22, 80, 443, 2082, 2083"
                 echo -e "${YELLOW}Expires On  :${NC} $EXP_DATE ($udays Days)"
                 echo -e "${GREEN}----------------------------------------${NC}"
                 echo -e "${CYAN}--- HTTP PAYLOAD (PORT 80) ---${NC}"
@@ -100,9 +99,6 @@ while true; do
                 echo -e "${GREEN}----------------------------------------${NC}"
                 echo -e "${CYAN}--- SSL / TLS PAYLOAD (PORT 443) ---${NC}"
                 echo "GET wss://$DOMAIN/HTTP/1.1[crlf]Host: $DOMAIN[crlf]Upgrade: websocket[crlf][crlf]"
-                echo -e "${GREEN}----------------------------------------${NC}"
-                echo -e "${CYAN}--- DNS / HOST CONFIG ---${NC}"
-                echo "Server IP: $PUBLIC_IP | DNS Host: $DOMAIN"
                 echo -e "${GREEN}========================================${NC}"
             elif [ "$sub" = "2" ]; then
                 read -p "Username to delete: " uname
@@ -129,7 +125,7 @@ while true; do
                 echo -e "${GREEN}VMess User Created!${NC}"
                 echo "Username: $vname"
                 echo "UUID: $UUID"
-                echo "Port: 443"
+                echo "Port: 443, 80"
                 echo "Path: /vmess"
             fi
             read -p "Press Enter to continue..."
@@ -159,7 +155,7 @@ while true; do
                 read -p "Enter Trojan Password: " tpass
                 echo -e "${GREEN}Trojan User Created!${NC}"
                 echo "Password: $tpass"
-                echo "Port: 443"
+                echo "Port: 443, 2083"
             fi
             read -p "Press Enter to continue..."
             ;;
@@ -178,32 +174,37 @@ while true; do
             ;;
         6)
             clear
-            echo -e "${YELLOW}--- OTHER SETTINGS ---${NC}"
-            echo "1. Change/Add SSH Ports (22, 443, 80, 8080, 2095)"
-            echo "2. View Configured Ports & Services"
-            echo "3. Install Nginx / HAProxy / Stunnel"
+            echo -e "${YELLOW}--- ALL PORTS & SYSTEM SETTINGS ---${NC}"
+            echo "1. Add Custom Port to SSH (Open any port)"
+            echo "2. View All Open/Configured Ports on VPS"
+            echo "3. Install Nginx / HAProxy / Stunnel (All web ports)"
             echo "4. Change Domain / DNS"
             echo "5. View/Edit Banner"
-            read -p "Choose [1-5]: " s_choice
+            echo "6. Open All Ports in Firewall (UFW/IPTables)"
+            read -p "Choose [1-6]: " s_choice
             case $s_choice in
                 1) 
-                    echo -e "${GREEN}Ports available:${NC} 22, 443, 80, 8080, 2095"
-                    read -p "Enter port to configure: " nport
-                    if [[ "$nport" =~ ^(22|443|80|8080|2095)$ ]]; then
+                    read -p "Enter any port number you want to open (e.g. 80, 443, 2082, 8080, etc.): " nport
+                    if [[ "$nport" =~ ^[0-9]+$ ]]; then
                         echo "Port $nport" >> /etc/ssh/sshd_config
-                        echo -e "${GREEN}Port $nport configured successfully!${NC}"
+                        systemctl restart ssh 2>/dev/null || systemctl restart sshd 2>/dev/null
+                        # فتح البورت في الجدار النارى تلقائياً إن وجد
+                        ufw allow "$nport" 2>/dev/null
+                        iptables -A INPUT -p tcp --dport "$nport" -j ACCEPT 2>/dev/null
+                        iptables -A INPUT -p udp --dport "$nport" -j ACCEPT 2>/dev/null
+                        echo -e "${GREEN}Port $nport added and opened successfully!${NC}"
                     else
-                        echo -e "${RED}Invalid port! Choose from: 22, 443, 80, 8080, 2095${NC}"
+                        echo -e "${RED}Invalid port number!${NC}"
                     fi
                     ;;
                 2) 
                     echo -e "${GREEN}=== CONFIGURED PORTS & SERVICES ===${NC}"
-                    echo "Target Managed Ports: 22, 443, 80, 8080, 2095"
-                    grep -E "^Port " /etc/ssh/sshd_config 2>/dev/null || echo "Port 22 (Default)"
+                    netstat -tuln 2>/dev/null || ss -tuln
                     ;;
                 3) 
                     apt update && apt install -y nginx haproxy stunnel4
-                    echo "Nginx, HAProxy, and Stunnel installed."
+                    systemctl enable --now nginx haproxy stunnel4
+                    echo -e "${GREEN}Nginx, HAProxy, and Stunnel installed and started successfully.${NC}"
                     ;;
                 4) 
                     read -p "Enter new Domain / DNS: " ndom
@@ -215,7 +216,15 @@ while true; do
                     echo -e "${YELLOW}Current Banner:${NC}"
                     cat /etc/issue.net
                     echo ""
-                    read -p "Press Enter to return..."
+                    ;;
+                6)
+                    echo -e "${YELLOW}Opening all common proxy and VPN ports (22, 80, 443, 8080, 2082, 2083, 2095, 8443)...${NC}"
+                    for p in 22 80 443 8080 2082 2083 2095 8443 53 5300; do
+                        ufw allow $p 2>/dev/null
+                        iptables -A INPUT -p tcp --dport $p -j ACCEPT 2>/dev/null
+                        iptables -A INPUT -p udp --dport $p -j ACCEPT 2>/dev/null
+                    done
+                    echo -e "${GREEN}All standard ports opened successfully!${NC}"
                     ;;
             esac
             read -p "Press Enter to continue..."
