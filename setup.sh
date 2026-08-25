@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v7.6 Pro with Auto-Update from GitHub
+# VERSION: v7.7 Perfect Frame & Auto Ports
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -51,7 +51,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}             [ SCRIPT MANAGER v7.6 ]                    ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}             [ PERFECT PANEL DESIGN v7.7 ]              ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address  :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain      :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
@@ -139,7 +139,6 @@ while true; do
         5)
             clear
             echo -e "${C_YLW}Updating script from GitHub...${C_NC}"
-            # استبدل الرابط أدناه برابط ملف setup.sh المباشر في حسابك على GitHub
             wget --no-cache -O setup.sh https://raw.githubusercontent.com/hassankako/vps-malak/main/setup.sh >/dev/null 2>&1
             chmod +x setup.sh
             echo -e "${C_GRN}Script updated successfully! Restarting...${C_NC}"
