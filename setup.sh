@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v5.9 Masterpiece
+# VERSION: v6.0 Masterpiece
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -31,7 +31,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v5.9 ]            ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v6.0 ]            ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain     :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
@@ -44,10 +44,11 @@ while true; do
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} ⚡ VMess Manager                                   ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 🚀 VLESS Manager                                   ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} ⚙️ All Ports, Domain & Banner Settings             ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} 🔄 Update Script from Web (GitHub)                 ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
     echo -e "${C_WHT}                  Date: $(date '+%Y-%m-%d %H:%M')${C_NC}"
     echo ""
-    read -n 1 -p "Select option [1-4]: " choice
+    read -n 1 -p "Select option [1-5]: " choice
     echo ""
 
     case $choice in
@@ -64,7 +65,6 @@ while true; do
                 apt-get update -y >/dev/null 2>&1
                 apt-get install openvpn iptables ufw -y >/dev/null 2>&1
                 
-                # فتح بورتات الاتصال الأساسية
                 ufw allow 22/tcp >/dev/null 2>&1
                 ufw allow 80/tcp >/dev/null 2>&1
                 ufw allow 443/tcp >/dev/null 2>&1
@@ -207,6 +207,15 @@ while true; do
                     ;;
             esac
             read -p "Press Enter to continue..."
+            ;;
+        5)
+            clear
+            echo -e "${C_YLW}Checking and updating script from Web (GitHub)...${C_NC}"
+            wget --no-cache -O setup.sh https://raw.githubusercontent.com/hassankako/vps-malak/main/setup.sh >/dev/null 2>&1
+            chmod +x setup.sh
+            echo -e "${C_GRN}Script updated successfully! Restarting...${C_NC}"
+            sleep 2
+            exec ./setup.sh
             ;;
     esac
 done
