@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v5.0 Masterpiece
+# VERSION: v5.1 Masterpiece
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -27,28 +27,31 @@ while true; do
     clear
     [ -f /etc/os-release ] && . /etc/os-release && SYS_OS="$NAME" || SYS_OS="Linux"
     
-    # جلب معلومات الأيبان والنطاق بدون أخطاء
     PUBLIC_IP=$(curl -s ifconfig.me || echo "N/A")
     DOMAIN=$(cat /etc/domain 2>/dev/null || echo "$PUBLIC_IP")
+    
+    # حساب عدد المتصلين بطريقة آمنة
+    ONLINE_USERS=$(ps -u root | wc -l 2>/dev/null || echo "1")
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v5.0 ]            ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v5.1 ]            ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain     :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• System OS  :${C_NC} ${C_WHT}$SYS_OS${C_NC}"
-    echo -e "${C_PRP}║${C_NC} ${C_BLU}• VPS Active :${C_NC} ${C_GRN}$VPS_DAYS Days Running${C_NC}"
+    echo -e "${C_PRP}║${C_NC} ${C_BLU}• Active     :${C_NC} ${C_GRN}$ONLINE_USERS Online${C_NC}  ${C_BLU}| Running:${C_NC} ${C_GRN}$VPS_DAYS Days${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                   --- CONTROL PANEL ---                    ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🔑 SSH / OVPN Manager    ${C_GRN}[4]${C_NC} 🛡️ Trojan Manager     ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} ⚡ VMess Manager         ${C_GRN}[5]${C_NC} 📦 Shadowsocks Manager ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 🚀 VLESS Manager         ${C_GRN}[6]${C_NC} ⚙️ All Ports & Settings ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🔑 SSH / OVPN Manager                              ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} ⚡ VMess Manager                                   ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 🚀 VLESS Manager                                   ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} ⚙️ All Ports & Settings                            ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
     echo -e "${C_WHT}                  Date: $(date '+%Y-%m-%d %H:%M')${C_NC}"
     echo ""
-    read -n 1 -p "Select option [1-6]: " choice
+    read -n 1 -p "Select option [1-4]: " choice
     echo ""
 
     case $choice in
@@ -99,20 +102,6 @@ while true; do
             read -p "Press Enter to continue..."
             ;;
         4)
-            clear
-            echo -e "${C_GRN}--- TROJAN MANAGER ---${NC}"
-            read -p "Enter Trojan Password: " tpass
-            echo -e "${C_GRN}Trojan User Created with password: $tpass${C_NC}"
-            read -p "Press Enter to continue..."
-            ;;
-        5)
-            clear
-            echo -e "${C_GRN}--- SHADOWSOCKS MANAGER ---${NC}"
-            read -p "Enter Password: " spass
-            echo -e "${C_GRN}Shadowsocks User Created successfully!${C_NC}"
-            read -p "Press Enter to continue..."
-            ;;
-        6)
             clear
             echo -e "${C_YLW}--- ALL PORTS & SETTINGS ---${NC}"
             echo "1. Open Custom Port"
