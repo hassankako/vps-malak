@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v7.0 All-In-One Unified Manager
+# VERSION: v7.1 Professional with Locked Banner
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -16,6 +16,25 @@ C_NC='\033[0m'
 
 CONFIG_FILE="/etc/k3ko_settings.conf"
 [ ! -f "$CONFIG_FILE" ] && echo "DOMAIN=Auto" > "$CONFIG_FILE" && echo "DNS_DOMAIN=None" >> "$CONFIG_FILE" && echo "PORT_SSH=22" >> "$CONFIG_FILE" && echo "PORT_SSL=443" >> "$CONFIG_FILE" && echo "PORT_WS=80" >> "$CONFIG_FILE"
+
+# تثبيت البانر الرسمي الثابت غير القابل للتعديل
+LOCKED_BANNER="
+════════════════════════════════════════════════════════════
+ 💥 ɪɴᴛᴇʀɴᴇᴛ ɪʟɪᴍɪᴛᴀᴅᴏ ☄️
+                 『 HASSAN K3KO 』
+               بسم الله الرحمن الرحيم 🛰️
+                     حسان كعكو
+ |whatsapp 
+‏أضف رقمي كجهة اتصال في واتساب: https://wa.me/qr/BQSQFESYU5NUB1 📳
+ |حسان كعكو 📺 |لخدمات الإنترنت 🗂
+ كافة الخطوط وشرائح esim التي يعمل عليها الانترنت
+ شكرا لاستخدام خدماتنا
+════════════════════════════════════════════════════════════
+"
+echo "$LOCKED_BANNER" > /etc/issue.net
+sed -i '/Banner/d' /etc/ssh/sshd_config 2>/dev/null
+echo "Banner /etc/issue.net" >> /etc/ssh/sshd_config
+systemctl restart ssh 2>/dev/null || systemctl restart sshd 2>/dev/null
 
 INSTALL_DATE_FILE="/etc/vps_install_date.txt"
 [ ! -f "$INSTALL_DATE_FILE" ] && date +%s > "$INSTALL_DATE_FILE"
@@ -37,7 +56,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}             [ ALL-IN-ONE VPS MANAGER v7.0 ]            ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}             [ ALL-IN-ONE VPS MANAGER v7.1 ]            ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Main Domain:${C_NC} ${C_CYN}$DOMAIN${C_NC} | ${C_BLU}DNS:${C_NC} ${C_YLW}$SAVED_DNS${C_NC}"
@@ -47,7 +66,7 @@ while true; do
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🚀 Install & Setup Core Protocols (SSL, WS, Xray)  ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} 👤 Unified Users Manager (Create, Delete, Stats)   ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} ⚙️ All-In-One Settings (Domain, DNS, Ports, Banner) ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} ⚙️ All-In-One Settings (Domain, DNS, Ports, Locked) ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} 🔄 Update Script from Web (GitHub)                 ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
     echo ""
@@ -202,7 +221,7 @@ EOF
                 echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} Set / Change Main Domain                           ${C_PRP}║${C_NC}"
                 echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} Set / Change DNS Domain (Cloudflare/Subdomain)     ${C_PRP}║${C_NC}"
                 echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} Setup & Configure Ports (SSH, SSL, WS)             ${C_PRP}║${C_NC}"
-                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} Remove Server Banner                               ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} View Locked Official Banner                      ${C_PRP}║${C_NC}"
                 echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} Return to Main Menu                              ${C_PRP}║${C_NC}"
                 echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
                 read -p "Choose [1-5]: " s_opt
@@ -246,10 +265,10 @@ EOF
                         ;;
                     4)
                         clear
-                        rm -f /etc/issue.net
-                        sed -i '/Banner/d' /etc/ssh/sshd_config 2>/dev/null
-                        systemctl restart ssh 2>/dev/null || systemctl restart sshd 2>/dev/null
-                        echo -e "${C_RED}Server Banner removed completely!${C_NC}"
+                        echo -e "${C_CYN}--- LOCKED OFFICIAL BANNER ---${C_NC}"
+                        cat /etc/issue.net
+                        echo "--------------------------------------------------------"
+                        echo -e "${C_YLW}Note: This banner is officially locked and cannot be modified or removed.${C_NC}"
                         read -p "Press Enter to continue..."
                         ;;
                     5)
