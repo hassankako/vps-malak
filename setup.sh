@@ -66,29 +66,47 @@ while true; do
                 read -p "Enter Expiry Days: " udays
                 useradd -M -s /bin/false "$uname"
                 echo "$uname:$upass" | chpasswd
+                # تحديد تاريخ الانتهاء بناءً على عدد الأيام
                 EXP_DATE=$(date -d "+$udays days" +"%Y-%m-%d" 2>/dev/null || date -v +${udays}d +"%Y-%m-%d" 2>/dev/null)
+                chage -E "$EXP_DATE" "$uname" 2>/dev/null
                 echo -e "${C_GRN}User $uname created successfully! Expires on: $EXP_DATE${C_NC}"
             elif [ "$sub" = "2" ]; then
                 read -p "Username to delete: " uname
                 userdel "$uname" && echo -e "${C_RED}User deleted.${C_NC}"
             elif [ "$sub" = "3" ]; then
                 clear
-                echo -e "${C_YLZ}==================================================${C_NC}"
-                echo -e "${C_GRN}       SSH USERS & ACTIVE CONNECTIONS REPORT      ${C_NC}"
-                echo -e "${C_YLZ}==================================================${C_NC}"
-                printf "${C_CYN}%-20s | %-15s${C_NC}\n" "USERNAME" "ACTIVE CONNECTIONS"
-                echo "--------------------------------------------------"
+                echo -e "${C_YLW}========================================================================${C_NC}"
+                echo -e "${C_GRN}               SSH USERS MANAGEMENT & EXPIRY REPORT                     ${C_NC}"
+                echo -e "${C_YLW}========================================================================${C_NC}"
+                printf "${C_CYN}%-12s | %-12s | %-12s | %-15s${C_NC}\n" "ACCOUNT" "EXPIRES" "ONLINE/MAX" "STATUS"
+                echo "------------------------------------------------------------------------"
                 
-                # جلب المستخدمين وفحص عدد المتصلين لكل حساب بدقة
+                # جلب المستخدمين الذين معرفهم أكبر من أو يساوي 1000
                 for user in $(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd); do
-                    count=$(ps -u "$user" | grep -v "PID" | wc -l)
-                    if [ "$count" -gt 0 ]; then
-                        printf "${C_WHT}%-20s${C_NC} | ${C_GRN}%-15s${C_NC}\n" "$user" "$count Online Device(s)"
+                    # حساب عدد المتصلين الحاليين
+                    online_count=$(ps -u "$user" 2>/dev/null | grep -v "PID" | wc -l)
+                    
+                    # جلب تاريخ انتهاء الحساب من نظام chage
+                    exp_info=$(chage -l "$user" 2>/dev/null | grep "Account expires" | cut -d: -f2)
+                    if [ -n "$exp_info" ] && [ "$exp_info" != " never" ]; then
+                        exp_date=$(date -d "$exp_info" "+%Y-%m-%d" 2>/dev/null || echo "$exp_info")
                     else
-                        printf "${C_WHT}%-20s${C_NC} | ${C_RED}%-15s${C_NC}\n" "$user" "Offline (0)"
+                        exp_date="Unlimited"
                     fi
+
+                    # التحقق مما إذا كان الحساب منتهياً أو مقفلاً
+                    is_locked=$(passwd -S "$user" 2>/dev/null | awk '{print $2}')
+                    
+                    if [ "$is_locked" = "L" ]; then
+                        status="${C_RED}Locked/Expired${C_NC}"
+                    else
+                        status="${C_GRN}Active${C_NC}"
+                    fi
+
+                    # طباعة السطر بتنسيق مرتب
+                    printf "${C_WHT}%-12s${C_NC} | ${C_YLW}%-12s${C_NC} | ${C_BLU}%-12s${C_NC} | %-15s\n" "$user" "$exp_date" "$online_count / 1" "$status"
                 done
-                echo -e "${C_YLZ}==================================================${C_NC}"
+                echo -e "${C_YLW}========================================================================${C_NC}"
             fi
             read -p "Press Enter to continue..."
             ;;
