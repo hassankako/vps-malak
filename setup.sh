@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v11.1.0 Premium Edition (Fixed & Updated)
+# VERSION: v11.1.0 Premium Edition (Full & Clean)
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -64,7 +64,7 @@ while true; do
             clear
             echo -e "${C_YLW}--- PORTS CONFIG: Opening ALL ports (1 to 65535 TCP/UDP) ---${C_NC}"
             
-            # إلغاء قيود الجدار الناري وفتح كافة البورتات بالكامل
+            # إلغاء قيود الجدار الناري وفتح كافة البورتات بالكامل في الخلفية
             ufw --force disable >/dev/null 2>&1
             ufw default allow incoming >/dev/null 2>&1
             ufw default allow outgoing >/dev/null 2>&1
@@ -81,10 +81,36 @@ while true; do
             echo -e "${C_GRN}Success! All ports from 1 to 65535 have been opened successfully.${C_NC}"
             read -p "Press Enter to return..."
             ;;
-        1|3)
+        1)
             clear
-            echo -e "${C_YLW}--- FEATURE READY ---${C_NC}"
-            echo -e "${C_GRN}Module is active and ready for deployment.${C_NC}"
+            echo -e "${C_YLW}--- CREATE SSH ACCOUNT ---${C_NC}"
+            read -p "Enter Username: " username
+            if id "$username" >/dev/null 2>&1; then
+                echo -e "${C_RED}Error: User already exists!${C_NC}"
+            else
+                read -p "Enter Password: " password
+                read -p "Enter Expiry Days (e.g., 30): " days
+                exp_date=$(date -d "+$days days" +"%Y-%m-%d" 2>/dev/null || date -v +${days}d +"%Y-%m-%d")
+                useradd -e "$exp_date" -s /bin/false -M "$username" >/dev/null 2>&1
+                echo "$username:$password" | chpasswd >/dev/null 2>&1
+                echo -e "${C_GRN}SSH Account Created Successfully!${C_NC}"
+            fi
+            read -p "Press Enter to continue..."
+            ;;
+        3)
+            clear
+            echo -e "${C_YLW}--- CREATE V2RAY ACCOUNT ---${C_NC}"
+            read -p "Enter V2Ray Username: " v_user
+            if grep -q "^$v_user" "$V2RAY_DB"; then
+                echo -e "${C_RED}Error: V2Ray user already exists!${C_NC}"
+            else
+                UUID=$(cat /proc/sys/kernel/random/uuid 2>/dev/null || uuidgen)
+                echo "$v_user:$UUID" >> "$V2RAY_DB"
+                VMESS_LINK="vmess://$(echo -e "{\"v\":\"2\",\"ps\":\"$v_user-K3KO\",\"add\":\"$PUBLIC_IP\",\"port\":\"443\",\"id\":\"$UUID\",\"aid\":\"0\",\"net\":\"ws\",\"type\":\"none\",\"host\":\"$PUBLIC_IP\",\"path\":\"/vmess\",\"tls\":\"\"}" | base64 -w 0)"
+                echo -e "${C_GRN}V2Ray Account Created Successfully!${C_NC}"
+                echo -e "UUID: ${C_CYN}$UUID${C_NC}"
+                echo -e "Link: ${C_WHT}$VMESS_LINK${C_NC}"
+            fi
             read -p "Press Enter to continue..."
             ;;
         0)
