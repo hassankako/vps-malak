@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v5.4 Masterpiece
+# VERSION: v5.5 Masterpiece
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -31,7 +31,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v5.4 ]            ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v5.5 ]            ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain     :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
@@ -124,12 +124,13 @@ while true; do
             ;;
         4)
             clear
-            echo -e "${C_YLW}--- SETTINGS: DOMAIN & BANNER & PORTS ---${NC}"
+            echo -e "${C_YLW}--- SETTINGS: DOMAIN, BANNER & PORTS ---${NC}"
             echo "1. Set / Change Domain"
             echo "2. Set / Change SSH Banner (Welcome Message)"
-            echo "3. Open Custom Port"
-            echo "4. View All Open Ports"
-            read -p "Choose [1-4]: " s_choice
+            echo "3. Open All Standard VPN Ports (22, 80, 443, 1194, 8080)"
+            echo "4. Open Custom Port"
+            echo "5. View All Open Ports"
+            read -p "Choose [1-5]: " s_choice
             case $s_choice in
                 1)
                     read -p "Enter your domain (e.g., example.com): " new_domain
@@ -144,12 +145,20 @@ while true; do
                     echo -e "${C_GRN}SSH Banner updated successfully!${C_NC}"
                     ;;
                 3)
+                    for p in 22 80 443 1194 8080 2082 2083; do
+                        ufw allow $p 2>/dev/null
+                        iptables -A INPUT -p tcp --dport $p -j ACCEPT 2>/dev/null
+                        iptables -A INPUT -p udp --dport $p -j ACCEPT 2>/dev/null
+                    done
+                    echo -e "${C_GRN}All standard VPN ports opened successfully!${C_NC}"
+                    ;;
+                4)
                     read -p "Enter port number: " nport
                     ufw allow "$nport" 2>/dev/null
                     iptables -A INPUT -p tcp --dport "$nport" -j ACCEPT 2>/dev/null
                     echo -e "${C_GRN}Port $nport opened!${C_NC}"
                     ;;
-                4)
+                5)
                     netstat -tuln 2>/dev/null || ss -tuln
                     ;;
             esac
