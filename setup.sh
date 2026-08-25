@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v5.7 Masterpiece
+# VERSION: v5.9 Masterpiece
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -31,7 +31,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v5.7 ]            ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v5.9 ]            ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain     :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
@@ -40,7 +40,7 @@ while true; do
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                   --- CONTROL PANEL ---                    ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🔑 SSH / OVPN Manager                              ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🔑 Install OpenVPN & SSH Manager                   ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} ⚡ VMess Manager                                   ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 🚀 VLESS Manager                                   ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} ⚙️ All Ports, Domain & Banner Settings             ${C_PRP}║${C_NC}"
@@ -53,12 +53,28 @@ while true; do
     case $choice in
         1)
             clear
-            echo -e "${C_GRN}--- SSH / OVPN MANAGER ---${NC}"
-            echo "1. Add SSH & OpenVPN User (with Days & Max Limit)"
-            echo "2. Delete SSH User"
-            echo "3. List Users, Days Left & Active Connections"
-            read -p "Choose [1-3]: " sub
+            echo -e "${C_GRN}--- OPENVPN & SSH MANAGER ---${NC}"
+            echo "1. Install / Setup OpenVPN Service on Server"
+            echo "2. Add SSH & OpenVPN User (with Days & Max Limit)"
+            echo "3. Delete SSH User"
+            echo "4. List Users, Days Left & Active Connections"
+            read -p "Choose [1-4]: " sub
             if [ "$sub" = "1" ]; then
+                echo -e "${C_YLW}Installing OpenVPN and configuring ports...${C_NC}"
+                apt-get update -y >/dev/null 2>&1
+                apt-get install openvpn iptables ufw -y >/dev/null 2>&1
+                
+                # فتح بورتات الاتصال الأساسية
+                ufw allow 22/tcp >/dev/null 2>&1
+                ufw allow 80/tcp >/dev/null 2>&1
+                ufw allow 443/tcp >/dev/null 2>&1
+                ufw allow 1194/udp >/dev/null 2>&1
+                iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+                iptables -A INPUT -p udp --dport 1194 -j ACCEPT
+                
+                echo -e "${C_GRN}OpenVPN Service & Ports Installed Successfully!${C_NC}"
+                
+            elif [ "$sub" = "2" ]; then
                 read -p "Enter Username: " uname
                 read -p "Enter Password: " upass
                 read -p "Enter Expiry Days (e.g., 30): " udays
@@ -84,12 +100,12 @@ while true; do
                 echo -e "${C_CYN}GET / HTTP/1.1[crlf]Host: $DOMAIN[crlf][crlf]${C_NC}"
                 echo -e "${C_GRN}==================================================${C_NC}"
                 
-            elif [ "$sub" = "2" ]; then
+            elif [ "$sub" = "3" ]; then
                 read -p "Username to delete: " uname
                 userdel -r "$uname" 2>/dev/null
                 rm -f "/etc/security/limits.d/$uname.limit" 2>/dev/null
                 echo -e "${C_RED}User deleted successfully.${C_NC}"
-            elif [ "$sub" = "3" ]; then
+            elif [ "$sub" = "4" ]; then
                 clear
                 echo -e "${C_GRN}      SSH USERS, DAYS LEFT & ACTIVE CONNECTIONS      ${C_NC}"
                 echo "-------------------------------------------------------------------"
@@ -143,8 +159,8 @@ while true; do
             echo "1. Set / Change Domain"
             echo "2. Set / Change SSH Banner (Welcome Message)"
             echo "3. Open ANY Single Port (Custom Port)"
-            echo "4. Open Port Range (e.g., from 1000 to 2000)"
-            echo "5. Open All Standard VPN Ports (22, 80, 443, 1194, 8080...)"
+            echo "4. Open ALL Ports (1 to 65535) - Full Access"
+            echo "5. Open All Standard VPN Ports"
             echo "6. View All Open Ports"
             read -p "Choose [1-6]: " s_choice
             case $s_choice in
@@ -168,13 +184,15 @@ while true; do
                     echo -e "${C_GRN}Port $nport opened successfully for TCP & UDP!${C_NC}"
                     ;;
                 4)
-                    read -p "Enter start port: " sport
-                    read -p "Enter end port: " eport
-                    ufw allow "$sport:$eport/tcp" 2>/dev/null
-                    ufw allow "$sport:$eport/udp" 2>/dev/null
-                    iptables -A INPUT -p tcp --dport "$sport:$eport" -j ACCEPT 2>/dev/null
-                    iptables -A INPUT -p udp --dport "$sport:$eport" -j ACCEPT 2>/dev/null
-                    echo -e "${C_GRN}Ports from $sport to $eport opened successfully!${C_NC}"
+                    echo -e "${C_YLW}Opening ALL ports (1 to 65535)... Please wait.${C_NC}"
+                    ufw allow 1:65535/tcp >/dev/null 2>&1
+                    ufw allow 1:65535/udp >/dev/null 2>&1
+                    iptables -A INPUT -p tcp --dport 1:65535 -j ACCEPT 2>/dev/null
+                    iptables -A INPUT -p udp --dport 1:65535 -j ACCEPT 2>/dev/null
+                    iptables -P INPUT ACCEPT 2>/dev/null
+                    iptables -P FORWARD ACCEPT 2>/dev/null
+                    iptables -P OUTPUT ACCEPT 2>/dev/null
+                    echo -e "${C_GRN}All 65535 ports opened successfully for TCP & UDP!${C_NC}"
                     ;;
                 5)
                     for p in 22 80 443 1194 8080 2082 2083 2095 8443 53; do
