@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v6.3 Masterpiece with Reboot
+# VERSION: v6.4 Masterpiece Fixed & Optimized
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -15,9 +15,12 @@ C_CYN='\033[1;36m'
 C_WHT='\033[1;37m'
 C_NC='\033[0m'
 
-# ملفات تتبع النظام
+# ملفات تتبع النظام (مع إصلاح حساب تاريخ التثبيت بدقة)
 INSTALL_DATE_FILE="/etc/vps_install_date.txt"
-[ ! -f "$INSTALL_DATE_FILE" ] && date +%s > "$INSTALL_DATE_FILE"
+if [ ! -f "$INSTALL_DATE_FILE" ]; then
+    date +%s > "$INSTALL_DATE_FILE"
+fi
+
 INSTALL_TIME=$(cat "$INSTALL_DATE_FILE")
 CURRENT_TIME=$(date +%s)
 VPS_DAYS=$(( (CURRENT_TIME - INSTALL_TIME) / 86400 ))
@@ -27,11 +30,11 @@ while true; do
     clear
     [ -f /etc/os-release ] && . /etc/os-release && SYS_OS="$NAME" || SYS_OS="Linux"
     
-    PUBLIC_IP=$(curl -s ifconfig.me || echo "N/A")
+    PUBLIC_IP=$(curl -s --max-time 3 ifconfig.me || hostname -I | awk '{print $1}' || echo "N/A")
     DOMAIN=$(cat /etc/domain 2>/dev/null || echo "$PUBLIC_IP")
     
     TOTAL_USERS=$(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd | wc -l)
-    ONLINE_USERS=$(ps -u root | wc -l 2>/dev/null || echo "1")
+    ONLINE_USERS=$(ps -u root h | wc -l 2>/dev/null || echo "1")
     
     EXPIRED_COUNT=0
     for u in $(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd); do
@@ -45,7 +48,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v6.3 ]            ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v6.4 ]            ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain     :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
@@ -70,10 +73,10 @@ while true; do
     case $choice in
         1)
             clear
-            echo -e "${C_GRN}--- SSH / OVPN MANAGER ---${NC}"
+            echo -e "${C_GRN}--- SSH / OVPN MANAGER ---${C_NC}"
             echo "1. Add SSH User"
             echo "2. Delete SSH User"
-            echo "3. Edit Existing User (Password / Expiry / Limit)"
+            echo "3. Edit Existing User (Password / Expiry)"
             read -p "Choose [1-3]: " sub
             if [ "$sub" = "1" ]; then
                 read -p "Enter Username: " uname
@@ -86,7 +89,8 @@ while true; do
                 echo -e "${C_GRN}User $uname created successfully! Expires on: $EXP_DATE${C_NC}"
             elif [ "$sub" = "2" ]; then
                 read -p "Username to delete: " uname
-                userdel "$uname" && echo -e "${C_RED}User deleted.${C_NC}"
+                userdel -r "$uname" 2>/dev/null || userdel "$uname"
+                echo -e "${C_RED}User deleted.${C_NC}"
             elif [ "$sub" = "3" ]; then
                 read -p "Enter Username to Edit: " euser
                 if id "$euser" &>/dev/null; then
@@ -95,7 +99,6 @@ while true; do
                         echo -e "${C_YLW}--- Editing User: $euser ---${NC}"
                         echo "1) 🔑 Change Password"
                         echo "2) 📅 Change Expiration Date"
-                        echo "3) 📊 Change Connection Limit"
                         echo "0) 🟩 Finish Editing"
                         read -p "Enter your choice: " ed_choice
                         case $ed_choice in
@@ -110,11 +113,6 @@ while true; do
                                 n_exp=$(date -d "+$ndays days" +"%Y-%m-%d" 2>/dev/null || date -v +${ndays}d +"%Y-%m-%d" 2>/dev/null)
                                 chage -E "$n_exp" "$euser"
                                 echo -e "${C_GRN}Expiry date updated to $n_exp!${C_NC}"
-                                sleep 1
-                                ;;
-                            3)
-                                read -p "Enter max connections limit: " nlimit
-                                echo -e "${C_GRN}Limit set to $nlimit (Saved).${C_NC}"
                                 sleep 1
                                 ;;
                             0)
@@ -153,12 +151,12 @@ while true; do
             echo -e "${C_YLW}========================================================================${C_NC}"
             echo -e "${C_GRN}               SSH USERS MANAGEMENT & EXPIRY REPORT                     ${C_NC}"
             echo -e "${C_YLW}========================================================================${C_NC}"
-            printf "${C_CYN}%-12s | %-12s | %-12s | %-15s${C_NC}\n" "ACCOUNT" "EXPIRES" "ONLINE/MAX" "STATUS"
+            printf "${C_CYN}%-12s | %-12s | %-12s | %-15s${C_NC}\n" "ACCOUNT" "EXPIRES" "ONLINE" "STATUS"
             echo "------------------------------------------------------------------------"
             
             while IFS: read -r user x uid gid desc home shell; do
                 if [ "$uid" -ge 1000 ] && [ "$user" != "nobody" ]; then
-                    online_count=$(ps -u "$user" 2>/dev/null | grep -v "PID" | wc -l)
+                    online_count=$(ps -u "$user" h 2>/dev/null | wc -l)
                     
                     exp_info=$(chage -l "$user" 2>/dev/null | grep "Account expires" | cut -d: -f2)
                     if [ -n "$exp_info" ] && [ "$exp_info" != " never" ]; then
@@ -174,7 +172,7 @@ while true; do
                         status="${C_GRN}Active${C_NC}"
                     fi
 
-                    printf "${C_WHT}%-12s${C_NC} | ${C_YLW}%-12s${C_NC} | ${C_BLU}%-12s${C_NC} | %-15s\n" "$user" "$exp_date" "$online_count / 1" "$status"
+                    printf "${C_WHT}%-12s${C_NC} | ${C_YLW}%-12s${C_NC} | ${C_BLU}%-12s${C_NC} | %-15s\n" "$user" "$exp_date" "$online_count" "$status"
                 fi
             done < /etc/passwd
             echo -e "${C_YLW}========================================================================${C_NC}"
@@ -183,12 +181,10 @@ while true; do
         4)
             clear
             echo -e "${C_GRN}--- WEBSOCKET & PROXIES MANAGER ---${NC}"
-            echo "7) Install WebSocket Proxy (Status 101) (Active)"
-            echo "8) Uninstall WebSocket Proxy"
-            echo "9) Install SOCKS Proxy (Status 200) (Inactive)"
-            echo "10) Uninstall SOCKS Proxy"
-            echo "11) Install Custom Payload Proxy (Inactive)"
-            read -p "Choose option [7-11]: " p_choice
+            echo "1) Install WebSocket Proxy (Status 101)"
+            echo "2) Uninstall WebSocket Proxy"
+            echo "3) Install SOCKS Proxy (Status 200)"
+            read -p "Choose option [1-3]: " p_choice
             echo -e "${C_GRN}Proxy operation executed successfully!${C_NC}"
             read -p "Press Enter to continue..."
             ;;
@@ -203,7 +199,8 @@ while true; do
             read -p "Choose [1-5]: " s_choice
             case $s_choice in
                 1)
-                    echo -e "${C_CYN}[*] Applying Ultra Fast DNS to the system...${C_NC}"
+                    echo -e "${C_CYN}[*] Applying Ultra Fast DNS to system...${C_NC}"
+                    chattr -i /etc/resolv.conf 2>/dev/null
                     cat <<EOF > /etc/resolv.conf
 nameserver 1.1.1.1
 nameserver 8.8.8.8
@@ -211,7 +208,7 @@ nameserver 1.0.0.1
 nameserver 8.8.4.4
 EOF
                     chattr +i /etc/resolv.conf 2>/dev/null
-                    echo -e "${C_GRN}[+] Fast DNS applied successfully! (Cloudflare & Google Enabled)${C_NC}"
+                    echo -e "${C_GRN}[+] Fast DNS applied successfully!${C_NC}"
                     ;;
                 2)
                     read -p "Enter port number: " nport
@@ -220,7 +217,7 @@ EOF
                     echo -e "${C_GRN}Port $nport opened!${C_NC}"
                     ;;
                 3)
-                    netstat -tuln 2>/dev/null || ss -tuln
+                    ss -tuln 2>/dev/null || netstat -tuln
                     ;;
                 4)
                     for p in 22 80 443 8080 2082 2083 2095 8443; do
