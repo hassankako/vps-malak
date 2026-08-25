@@ -1,11 +1,10 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script Manager
-# VERSION: v9.1 ULTIMATE (With Port 80 & 443 Config Generator)
+# VERSION: v9.2 ULTIMATE (Real JSON Config for Ports 80 & 443)
 # AUTHOR: HASSAN K3KO
 # =========================================
 
-# الألوان
 C_RED='\033[1;31m'
 C_GRN='\033[1;32m'
 C_YLW='\033[1;33m'
@@ -19,116 +18,19 @@ DOMAIN_FILE="/etc/domain"
 CONFIG_DIR="/etc/v2ray"
 CONFIG_FILE="$CONFIG_DIR/config.json"
 
-# إنشاء مجلد v2ray إذا لم يكن موجوداً
 mkdir -p "$CONFIG_DIR"
 
-while true; do
-    clear
-    PUBLIC_IP=$(curl -s ifconfig.me || hostname -I | awk '{print $1}' || echo "N/A")
-    
-    if [ -f "$DOMAIN_FILE" ]; then
-        DOMAIN=$(cat "$DOMAIN_FILE")
-    else
-        DOMAIN="$PUBLIC_IP"
-    fi
-    
-    SSH_COUNT=$(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd | wc -l)
-    V2RAY_COUNT=0
-    [ -f "$CONFIG_FILE" ] && V2RAY_COUNT=$(grep -o "id" "$CONFIG_FILE" 2>/dev/null | wc -l)
-
-    echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}            [ SCRIPT MANAGER v9.1 ULTIMATE ]                ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
-    echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address  :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
-    echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain      :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
-    echo -e "${C_PRP}║${C_NC} ${C_BLU}• Users Count :${C_NC} ${C_GRN}SSH: $SSH_COUNT${C_NC}  ${C_YLW}|${C_NC}  ${C_CYN}V2Ray: $V2RAY_COUNT${C_NC}              ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_YLW}                   --- MAIN CONTROL ---                     ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🚀 Install & Auto-Open All Ports (SSL/80/53/Proxy)  ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} 🛠️ Fix & Free Ports 80 / 443 (إصلاح منافذ 80 و 443) ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 👤 SSH Accounts Manager                         ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} 🌐 V2Ray Accounts Manager (Ports 80/443)      ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} 🌐 Add / Change Domain (إضافة أو تغيير الدومين) ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[6]${C_NC} 🔄 Update Script from GitHub                  ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_RED}[0]${C_NC} 🚪 Exit                                       ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
-    echo ""
-    read -p "Select option [0-6]: " choice
-    echo ""
-
-    case $choice in
-        1)
-            clear
-            echo -e "${C_GRN}--- Installing & Opening All Ports ---${C_NC}"
-            for p in 22 80 443 8080 2082 2083 2095 8443 53; do
-                ufw allow $p 2>/dev/null
-                iptables -A INPUT -p tcp --dport $p -j ACCEPT 2>/dev/null
-                iptables -A INPUT -p udp --dport $p -j ACCEPT 2>/dev/null
-            done
-            echo -e "${C_GRN}Ports 80 and 443 opened successfully via Firewall!${C_NC}"
-            read -p "Press Enter to continue..."
-            ;;
-        2)
-            clear
-            echo -e "${C_YLW}--- Fixing & Freeing Ports 80 & 443 ---${C_NC}"
-            systemctl stop apache2 2>/dev/null
-            systemctl disable apache2 2>/dev/null
-            systemctl stop nginx 2>/dev/null
-            fuser -k 80/tcp 2>/dev/null
-            fuser -k 443/tcp 2>/dev/null
-            echo -e "${C_GRN}[+] Ports 80 and 443 are now completely free!${C_NC}"
-            read -p "Press Enter to continue..."
-            ;;
-        3)
-            clear
-            echo -e "${C_GRN}--- SSH Accounts Manager ---${C_NC}"
-            echo "1. Add SSH User"
-            echo "2. Delete SSH User"
-            echo "3. List SSH Users"
-            read -p "Choose [1-3]: " sub_ssh
-            if [ "$sub_ssh" = "1" ]; then
-                read -p "Username: " usn
-                read -p "Password: " psw
-                useradd -M -s /bin/false "$usn"
-                echo "$usn:$psw" | chpasswd
-                echo -e "${C_GRN}User created successfully!${C_NC}"
-            elif [ "$sub_ssh" = "2" ]; then
-                read -p "Username to delete: " usn
-                userdel -r "$usn" 2>/dev/null || userdel "$usn"
-                echo -e "${C_RED}User deleted.${C_NC}"
-            elif [ "$sub_ssh" = "3" ]; then
-                awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd
-            fi
-            read -p "Press Enter to continue..."
-            ;;
-        4)
-            clear
-            echo -e "${C_CYN}--- V2Ray Accounts Manager (Ports 80 & 443) ---${C_NC}"
-            echo "1. Create VMess / VLESS User & Generate Config File"
-            echo "2. View Current Config File (Ports 80 & 443)"
-            echo "3. Back to Main Menu"
-            read -p "Choose [1-3]: " sub_v2ray
-            if [ "$sub_v2ray" = "1" ]; then
-                read -p "Enter Username (VMess/VLESS): " vname
-                UUID=$(cat /proc/sys/kernel/random/uuid)
-                
-                # إنشاء ملف الـ JSON ليعمل على المنفذين 80 و 443
-                cat <<EOF > "$CONFIG_FILE"
+# دالة لإنشاء ملف إعدادات أساسي إذا لم يكن موجوداً
+init_config() {
+    if [ ! -f "$CONFIG_FILE" ]; then
+        cat <<EOF > "$CONFIG_FILE"
 {
   "inbounds": [
     {
       "port": 443,
       "protocol": "vless",
       "settings": {
-        "clients": [
-          {
-            "id": "$UUID",
-            "level": 0,
-            "email": "$vname@$DOMAIN"
-          }
-        ],
+        "clients": [],
         "decryption": "none"
       },
       "streamSettings": {
@@ -140,14 +42,7 @@ while true; do
       "port": 80,
       "protocol": "vmess",
       "settings": {
-        "clients": [
-          {
-            "id": "$UUID",
-            "level": 0,
-            "alterId": 0,
-            "email": "$vname@$DOMAIN"
-          }
-        ]
+        "clients": []
       },
       "streamSettings": {
         "network": "tcp",
@@ -163,21 +58,138 @@ while true; do
   ]
 }
 EOF
-                echo -e "${C_GRN}====================================================${C_NC}"
-                echo -e "${C_GRN} User '$vname' Created Successfully on Ports 80 & 443! ${C_NC}"
-                echo -e "${C_GRN}====================================================${C_NC}"
-                echo -e "${C_YLW}• Domain :${C_NC} $DOMAIN"
-                echo -e "${C_YLW}• Port 443 (VLESS) :${C_NC} Active"
-                echo -e "${C_YLW}• Port 80 (VMess)  :${C_NC} Active"
-                echo -e "${C_YLW}• UUID   :${C_NC} $UUID"
-                echo -e "${C_GRN}• Config File Saved to: $CONFIG_FILE${C_NC}"
+    fi
+}
+
+init_config
+
+while true; do
+    clear
+    PUBLIC_IP=$(curl -s ifconfig.me || hostname -I | awk '{print $1}' || echo "N/A")
+    
+    if [ -f "$DOMAIN_FILE" ]; then
+        DOMAIN=$(cat "$DOMAIN_FILE")
+    else
+        DOMAIN="$PUBLIC_IP"
+    fi
+    
+    SSH_COUNT=$(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd | wc -l)
+
+    echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}            [ SCRIPT MANAGER v9.2 ULTIMATE ]                ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
+    echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address  :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
+    echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain      :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
+    echo -e "${C_PRP}║${C_NC} ${C_BLU}• Users Count :${C_NC} ${C_GRN}SSH: $SSH_COUNT${C_NC}                            ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_YLW}                   --- MAIN CONTROL ---                     ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🚀 Open Ports 80 & 443 (فتح المنافذ)             ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} 🛠️ Fix & Free Ports 80 / 443 (تحرير المنافذ)      ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 👤 SSH Accounts Manager                         ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} 🌐 V2Ray Real Config (Ports 80 & 443)         ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} 🌐 Add / Change Domain (تغيير الدومين)         ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_RED}[0]${C_NC} 🚪 Exit                                       ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
+    echo ""
+    read -p "Select option [0-5]: " choice
+    echo ""
+
+    case $choice in
+        1)
+            clear
+            echo -e "${C_GRN}--- Opening Ports 80 & 443 ---${C_NC}"
+            ufw allow 80/tcp 2>/dev/null
+            ufw allow 443/tcp 2>/dev/null
+            iptables -A INPUT -p tcp --dport 80 -j ACCEPT 2>/dev/null
+            iptables -A INPUT -p tcp --dport 443 -j ACCEPT 2>/dev/null
+            echo -e "${C_GRN}Ports 80 and 443 opened successfully!${C_NC}"
+            read -p "Press Enter to continue..."
+            ;;
+        2)
+            clear
+            echo -e "${C_YLW}--- Freeing Ports 80 & 443 ---${C_NC}"
+            systemctl stop apache2 2>/dev/null
+            systemctl disable apache2 2>/dev/null
+            systemctl stop nginx 2>/dev/null
+            fuser -k 80/tcp 2>/dev/null
+            fuser -k 443/tcp 2>/dev/null
+            echo -e "${C_GRN}Ports 80 and 443 are now free!${C_NC}"
+            read -p "Press Enter to continue..."
+            ;;
+        3)
+            clear
+            echo -e "${C_GRN}--- SSH Accounts Manager ---${C_NC}"
+            echo "1. Add SSH User"
+            echo "2. Delete SSH User"
+            read -p "Choose [1-2]: " sub_ssh
+            if [ "$sub_ssh" = "1" ]; then
+                read -p "Username: " usn
+                read -p "Password: " psw
+                useradd -M -s /bin/false "$usn"
+                echo "$usn:$psw" | chpasswd
+                echo -e "${C_GRN}SSH User created!${C_NC}"
+            elif [ "$sub_ssh" = "2" ]; then
+                read -p "Username to delete: " usn
+                userdel -r "$usn" 2>/dev/null
+                echo -e "${C_RED}Deleted.${C_NC}"
+            fi
+            read -p "Press Enter to continue..."
+            ;;
+        4)
+            clear
+            echo -e "${C_CYN}--- V2Ray Real Config (Ports 80 & 443) ---${C_NC}"
+            echo "1. Add VLESS User (Port 443)"
+            echo "2. Add VMess User (Port 80)"
+            echo "3. View Full config.json File"
+            read -p "Choose [1-3]: " sub_v2ray
+            
+            init_config
+            
+            if [ "$sub_v2ray" = "1" ]; then
+                read -p "Enter VLESS Username: " vname
+                UUID=$(cat /proc/sys/kernel/random/uuid)
+                
+                # إضافة المستخدم داخل مصفوفة VLESS (Port 443) في ملف JSON باستخدام بايثون لضمان صحة الملف
+                python3 -c "
+import json
+with open('$CONFIG_FILE', 'r') as f:
+    data = json.load(f)
+for inbound in data['inbounds']:
+    if inbound.get('port') == 443:
+        inbound['settings']['clients'].append({'id': '$UUID', 'level': 0, 'email': '$vname@$DOMAIN'})
+with open('$CONFIG_FILE', 'w') as f:
+    json.dump(data, f, indent=2)
+"
+                echo -e "${C_GRN}VLESS User Added to Port 443 Successfully!${C_NC}"
+                echo -e "${C_YLW}Domain :${C_NC} $DOMAIN"
+                echo -e "${C_YLW}Port   :${C_NC} 443 (VLESS)"
+                echo -e "${C_YLW}UUID   :${C_NC} $UUID"
+                
             elif [ "$sub_v2ray" = "2" ]; then
-                if [ -f "$CONFIG_FILE" ]; then
-                    echo -e "${C_YLW}--- Contents of $CONFIG_FILE ---${C_NC}"
-                    cat "$CONFIG_FILE"
-                else
-                    echo -e "${C_RED}No config file found! Please create a user first.${C_NC}"
-                fi
+                read -p "Enter VMess Username: " vname
+                UUID=$(cat /proc/sys/kernel/random/uuid)
+                
+                # إضافة المستخدم داخل مصفوفة VMess (Port 80) في ملف JSON باستخدام بايثون
+                python3 -c "
+import json
+with open('$CONFIG_FILE', 'r') as f:
+    data = json.load(f)
+for inbound in data['inbounds']:
+    if inbound.get('port') == 80:
+        inbound['settings']['clients'].append({'id': '$UUID', 'level': 0, 'alterId': 0, 'email': '$vname@$DOMAIN'})
+with open('$CONFIG_FILE', 'w') as f:
+    json.dump(data, f, indent=2)
+"
+                echo -e "${C_GRN}VMess User Added to Port 80 Successfully!${C_NC}"
+                echo -e "${C_YLW}Domain :${C_NC} $DOMAIN"
+                echo -e "${C_YLW}Port   :${C_NC} 80 (VMess)"
+                echo -e "${C_YLW}UUID   :${C_NC} $UUID"
+                
+            elif [ "$sub_v2ray" = "3" ]; then
+                echo -e "${C_YLW}--- Contents of $CONFIG_FILE ---${C_NC}"
+                cat "$CONFIG_FILE"
             fi
             read -p "Press Enter to continue..."
             ;;
@@ -185,30 +197,16 @@ EOF
             clear
             echo -e "${C_YLW}--- DOMAIN CONFIGURATION ---${C_NC}"
             echo -e "Current Domain: ${C_CYN}$DOMAIN${C_NC}"
-            echo ""
-            read -p "Enter your new Domain (e.g., ssh.kakoo2.co.uk): " new_domain
+            read -p "Enter new Domain: " new_domain
             if [ -n "$new_domain" ]; then
                 echo "$new_domain" > "$DOMAIN_FILE"
-                echo -e "${C_GRN}Domain successfully updated to: $new_domain${C_NC}"
-            else
-                echo -e "${C_RED}Domain cannot be empty!${C_NC}"
+                echo -e "${C_GRN}Domain updated to: $new_domain${C_NC}"
             fi
             read -p "Press Enter to continue..."
             ;;
-        6)
-            clear
-            echo -e "${C_YLW}Checking for updates from GitHub...${C_NC}"
-            sleep 1
-            echo -e "${C_GRN}Script is already up to date!${C_NC}"
-            read -p "Press Enter to continue..."
-            ;;
         0)
-            echo -e "${C_GRN}Exiting... Goodbye!${C_NC}"
+            echo -e "${C_GRN}Goodbye!${C_NC}"
             break
-            ;;
-        *)
-            echo -e "${C_RED}Invalid option!${C_NC}"
-            sleep 1
             ;;
     esac
 done
