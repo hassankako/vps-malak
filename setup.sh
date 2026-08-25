@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script Manager
-# VERSION: v9.2 ULTIMATE (Real JSON Config for Ports 80 & 443)
+# VERSION: v9.3 ULTIMATE (Real Config & Link Generator)
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -77,7 +77,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}            [ SCRIPT MANAGER v9.2 ULTIMATE ]                ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}            [ SCRIPT MANAGER v9.3 ULTIMATE ]                ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address  :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain      :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
@@ -88,7 +88,7 @@ while true; do
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🚀 Open Ports 80 & 443 (فتح المنافذ)             ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} 🛠️ Fix & Free Ports 80 / 443 (تحرير المنافذ)      ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 👤 SSH Accounts Manager                         ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} 🌐 V2Ray Real Config (Ports 80 & 443)         ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} 🌐 V2Ray Real Config & Links (Ports 80 & 443) ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} 🌐 Add / Change Domain (تغيير الدومين)         ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_RED}[0]${C_NC} 🚪 Exit                                       ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
@@ -129,19 +129,19 @@ while true; do
                 read -p "Password: " psw
                 useradd -M -s /bin/false "$usn"
                 echo "$usn:$psw" | chpasswd
-                echo -e "${C_GRN}SSH User created!${C_NC}"
+                echo -e "${C_GRN}SSH User created successfully!${C_NC}"
             elif [ "$sub_ssh" = "2" ]; then
                 read -p "Username to delete: " usn
                 userdel -r "$usn" 2>/dev/null
-                echo -e "${C_RED}Deleted.${C_NC}"
+                echo -e "${C_RED}User deleted successfully.${C_NC}"
             fi
             read -p "Press Enter to continue..."
             ;;
         4)
             clear
-            echo -e "${C_CYN}--- V2Ray Real Config (Ports 80 & 443) ---${C_NC}"
-            echo "1. Add VLESS User (Port 443)"
-            echo "2. Add VMess User (Port 80)"
+            echo -e "${C_CYN}--- V2Ray Real Config & Links ---${C_NC}"
+            echo "1. Add VLESS User (Port 443) & Get Link"
+            echo "2. Add VMess User (Port 80) & Get Link"
             echo "3. View Full config.json File"
             read -p "Choose [1-3]: " sub_v2ray
             
@@ -151,7 +151,6 @@ while true; do
                 read -p "Enter VLESS Username: " vname
                 UUID=$(cat /proc/sys/kernel/random/uuid)
                 
-                # إضافة المستخدم داخل مصفوفة VLESS (Port 443) في ملف JSON باستخدام بايثون لضمان صحة الملف
                 python3 -c "
 import json
 with open('$CONFIG_FILE', 'r') as f:
@@ -162,16 +161,19 @@ for inbound in data['inbounds']:
 with open('$CONFIG_FILE', 'w') as f:
     json.dump(data, f, indent=2)
 "
+                # توليد رابط VLESS الحقيقي
+                VLESS_LINK="vless://$UUID@$DOMAIN:443?encryption=none&security=none&type=tcp#${vname}-VLESS443"
+
                 echo -e "${C_GRN}VLESS User Added to Port 443 Successfully!${C_NC}"
-                echo -e "${C_YLW}Domain :${C_NC} $DOMAIN"
-                echo -e "${C_YLW}Port   :${C_NC} 443 (VLESS)"
-                echo -e "${C_YLW}UUID   :${C_NC} $UUID"
+                echo -e "${C_YLW}------------------------------------------------------${C_NC}"
+                echo -e "${C_WHT}VLESS Link:${C_NC}"
+                echo -e "${C_CYN}$VLESS_LINK${C_NC}"
+                echo -e "${C_YLW}------------------------------------------------------${C_NC}"
                 
             elif [ "$sub_v2ray" = "2" ]; then
                 read -p "Enter VMess Username: " vname
                 UUID=$(cat /proc/sys/kernel/random/uuid)
                 
-                # إضافة المستخدم داخل مصفوفة VMess (Port 80) في ملف JSON باستخدام بايثون
                 python3 -c "
 import json
 with open('$CONFIG_FILE', 'r') as f:
@@ -182,10 +184,15 @@ for inbound in data['inbounds']:
 with open('$CONFIG_FILE', 'w') as f:
     json.dump(data, f, indent=2)
 "
+                # تجهيز وتشفير رابط VMess بصيغة Base64 كالنظام القياسي
+                VMESS_JSON="{\"v\":\"2\",\"ps\":\"${vname}-VMESS80\",\"add\":\"$DOMAIN\",\"port\":\"80\",\"id\":\"$UUID\",\"aid\":\"0\",\"scy\":\"auto\",\"net\":\"type\",\"type\":\"none\",\"host\":\"\",\"path\":\"/\"}"
+                VMESS_LINK="vmess://$(echo -n "$VMESS_JSON" | base64 -w 0)"
+
                 echo -e "${C_GRN}VMess User Added to Port 80 Successfully!${C_NC}"
-                echo -e "${C_YLW}Domain :${C_NC} $DOMAIN"
-                echo -e "${C_YLW}Port   :${C_NC} 80 (VMess)"
-                echo -e "${C_YLW}UUID   :${C_NC} $UUID"
+                echo -e "${C_YLW}------------------------------------------------------${C_NC}"
+                echo -e "${C_WHT}VMess Link:${C_NC}"
+                echo -e "${C_CYN}$VMESS_LINK${C_NC}"
+                echo -e "${C_YLW}------------------------------------------------------${C_NC}"
                 
             elif [ "$sub_v2ray" = "3" ]; then
                 echo -e "${C_YLW}--- Contents of $CONFIG_FILE ---${C_NC}"
@@ -200,7 +207,7 @@ with open('$CONFIG_FILE', 'w') as f:
             read -p "Enter new Domain: " new_domain
             if [ -n "$new_domain" ]; then
                 echo "$new_domain" > "$DOMAIN_FILE"
-                echo -e "${C_GRN}Domain updated to: $new_domain${C_NC}"
+                echo -e "${C_GRN}Domain successfully updated to: $new_domain${C_NC}"
             fi
             read -p "Press Enter to continue..."
             ;;
