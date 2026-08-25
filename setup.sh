@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script Manager
-# VERSION: v9.1 ULTIMATE (Full V2Ray & Domain Support)
+# VERSION: v9.1 ULTIMATE (With Port 80 & 443 Config Generator)
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -16,6 +16,11 @@ C_WHT='\033[1;37m'
 C_NC='\033[0m'
 
 DOMAIN_FILE="/etc/domain"
+CONFIG_DIR="/etc/v2ray"
+CONFIG_FILE="$CONFIG_DIR/config.json"
+
+# إنشاء مجلد v2ray إذا لم يكن موجوداً
+mkdir -p "$CONFIG_DIR"
 
 while true; do
     clear
@@ -29,7 +34,7 @@ while true; do
     
     SSH_COUNT=$(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd | wc -l)
     V2RAY_COUNT=0
-    [ -d /etc/v2ray ] && V2RAY_COUNT=$(ls -l /etc/v2ray 2>/dev/null | wc -l)
+    [ -f "$CONFIG_FILE" ] && V2RAY_COUNT=$(grep -o "id" "$CONFIG_FILE" 2>/dev/null | wc -l)
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
@@ -44,7 +49,7 @@ while true; do
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🚀 Install & Auto-Open All Ports (SSL/80/53/Proxy)  ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} 🛠️ Fix & Free Ports 80 / 443 (إصلاح منافذ 80 و 443) ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 👤 SSH Accounts Manager                         ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} 🌐 V2Ray Accounts Manager                     ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} 🌐 V2Ray Accounts Manager (Ports 80/443)      ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} 🌐 Add / Change Domain (إضافة أو تغيير الدومين) ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[6]${C_NC} 🔄 Update Script from GitHub                  ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_RED}[0]${C_NC} 🚪 Exit                                       ${C_PRP}║${C_NC}"
@@ -62,13 +67,12 @@ while true; do
                 iptables -A INPUT -p tcp --dport $p -j ACCEPT 2>/dev/null
                 iptables -A INPUT -p udp --dport $p -j ACCEPT 2>/dev/null
             done
-            echo -e "${C_GRN}All ports (including 80 and 443) successfully opened!${C_NC}"
+            echo -e "${C_GRN}Ports 80 and 443 opened successfully via Firewall!${C_NC}"
             read -p "Press Enter to continue..."
             ;;
         2)
             clear
             echo -e "${C_YLW}--- Fixing & Freeing Ports 80 & 443 ---${C_NC}"
-            echo -e "${C_CYN}[*] Stopping services blocking ports 80 and 443...${C_NC}"
             systemctl stop apache2 2>/dev/null
             systemctl disable apache2 2>/dev/null
             systemctl stop nginx 2>/dev/null
@@ -101,24 +105,79 @@ while true; do
             ;;
         4)
             clear
-            echo -e "${C_CYN}--- V2Ray Accounts Manager ---${C_NC}"
-            echo "1. Create VMess User"
-            echo "2. Create VLESS User"
-            echo "3. Delete V2Ray User"
-            echo "4. Back to Main Menu"
-            read -p "Choose [1-4]: " sub_v2ray
+            echo -e "${C_CYN}--- V2Ray Accounts Manager (Ports 80 & 443) ---${C_NC}"
+            echo "1. Create VMess / VLESS User & Generate Config File"
+            echo "2. View Current Config File (Ports 80 & 443)"
+            echo "3. Back to Main Menu"
+            read -p "Choose [1-3]: " sub_v2ray
             if [ "$sub_v2ray" = "1" ]; then
-                read -p "Enter VMess Username: " vname
+                read -p "Enter Username (VMess/VLESS): " vname
                 UUID=$(cat /proc/sys/kernel/random/uuid)
-                echo -e "${C_GRN}VMess User '$vname' Created Successfully!${C_NC}"
-                echo -e "${C_YLW}UUID: $UUID${C_NC}"
-                echo -e "${C_WHT}Domain: $DOMAIN (Port: 443)${C_NC}"
+                
+                # إنشاء ملف الـ JSON ليعمل على المنفذين 80 و 443
+                cat <<EOF > "$CONFIG_FILE"
+{
+  "inbounds": [
+    {
+      "port": 443,
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "$UUID",
+            "level": 0,
+            "email": "$vname@$DOMAIN"
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "none"
+      }
+    },
+    {
+      "port": 80,
+      "protocol": "vmess",
+      "settings": {
+        "clients": [
+          {
+            "id": "$UUID",
+            "level": 0,
+            "alterId": 0,
+            "email": "$vname@$DOMAIN"
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "none"
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "settings": {}
+    }
+  ]
+}
+EOF
+                echo -e "${C_GRN}====================================================${C_NC}"
+                echo -e "${C_GRN} User '$vname' Created Successfully on Ports 80 & 443! ${C_NC}"
+                echo -e "${C_GRN}====================================================${C_NC}"
+                echo -e "${C_YLW}• Domain :${C_NC} $DOMAIN"
+                echo -e "${C_YLW}• Port 443 (VLESS) :${C_NC} Active"
+                echo -e "${C_YLW}• Port 80 (VMess)  :${C_NC} Active"
+                echo -e "${C_YLW}• UUID   :${C_NC} $UUID"
+                echo -e "${C_GRN}• Config File Saved to: $CONFIG_FILE${C_NC}"
             elif [ "$sub_v2ray" = "2" ]; then
-                read -p "Enter VLESS Username: " vlname
-                UUID=$(cat /proc/sys/kernel/random/uuid)
-                echo -e "${C_GRN}VLESS User '$vlname' Created Successfully!${C_NC}"
-                echo -e "${C_YLW}UUID: $UUID${C_NC}"
-                echo -e "${C_WHT}Domain: $DOMAIN (Port: 443)${C_NC}"
+                if [ -f "$CONFIG_FILE" ]; then
+                    echo -e "${C_YLW}--- Contents of $CONFIG_FILE ---${C_NC}"
+                    cat "$CONFIG_FILE"
+                else
+                    echo -e "${C_RED}No config file found! Please create a user first.${C_NC}"
+                fi
             fi
             read -p "Press Enter to continue..."
             ;;
