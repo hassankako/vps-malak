@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script Manager
-# VERSION: v9.3 ULTIMATE (Real Config & Link Generator)
+# VERSION: v9.4 ULTIMATE (Days & GB Support)
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -20,7 +20,6 @@ CONFIG_FILE="$CONFIG_DIR/config.json"
 
 mkdir -p "$CONFIG_DIR"
 
-# دالة لإنشاء ملف إعدادات أساسي إذا لم يكن موجوداً
 init_config() {
     if [ ! -f "$CONFIG_FILE" ]; then
         cat <<EOF > "$CONFIG_FILE"
@@ -77,7 +76,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}            [ SCRIPT MANAGER v9.3 ULTIMATE ]                ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}            [ SCRIPT MANAGER v9.4 ULTIMATE ]                ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address  :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain      :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
@@ -88,7 +87,7 @@ while true; do
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🚀 Open Ports 80 & 443 (فتح المنافذ)             ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} 🛠️ Fix & Free Ports 80 / 443 (تحرير المنافذ)      ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 👤 SSH Accounts Manager                         ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} 🌐 V2Ray Real Config & Links (Ports 80 & 443) ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} 🌐 V2Ray Config (Days & GB Control)         ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[5]${C_NC} 🌐 Add / Change Domain (تغيير الدومين)         ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_RED}[0]${C_NC} 🚪 Exit                                       ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
@@ -139,9 +138,9 @@ while true; do
             ;;
         4)
             clear
-            echo -e "${C_CYN}--- V2Ray Real Config & Links ---${C_NC}"
-            echo "1. Add VLESS User (Port 443) & Get Link"
-            echo "2. Add VMess User (Port 80) & Get Link"
+            echo -e "${C_CYN}--- V2Ray Manager (Days & GB Control) ---${C_NC}"
+            echo "1. Add VLESS User (Port 443)"
+            echo "2. Add VMess User (Port 80)"
             echo "3. View Full config.json File"
             read -p "Choose [1-3]: " sub_v2ray
             
@@ -149,7 +148,11 @@ while true; do
             
             if [ "$sub_v2ray" = "1" ]; then
                 read -p "Enter VLESS Username: " vname
+                read -p "Enter Expiry Days (عدد الأيام): " vdays
+                read -p "Enter Data Limit in GB (حجم الجيجابايت): " vgb
+                
                 UUID=$(cat /proc/sys/kernel/random/uuid)
+                EXP_DATE=$(date -d "+${vdays:-30} days" +"%Y-%m-%d" 2>/dev/null || date -v+${vdays:-30}d +"%Y-%m-%d")
                 
                 python3 -c "
 import json
@@ -161,18 +164,24 @@ for inbound in data['inbounds']:
 with open('$CONFIG_FILE', 'w') as f:
     json.dump(data, f, indent=2)
 "
-                # توليد رابط VLESS الحقيقي
                 VLESS_LINK="vless://$UUID@$DOMAIN:443?encryption=none&security=none&type=tcp#${vname}-VLESS443"
 
-                echo -e "${C_GRN}VLESS User Added to Port 443 Successfully!${C_NC}"
-                echo -e "${C_YLW}------------------------------------------------------${C_NC}"
-                echo -e "${C_WHT}VLESS Link:${C_NC}"
-                echo -e "${C_CYN}$VLESS_LINK${C_NC}"
-                echo -e "${C_YLW}------------------------------------------------------${C_NC}"
+                echo -e "${C_GRN}====================================================${C_NC}"
+                echo -e "${C_GRN} VLESS User Created Successfully!                   ${C_NC}"
+                echo -e "${C_GRN}====================================================${C_NC}"
+                echo -e "${C_YLW}• Username  :${C_NC} $vname"
+                echo -e "${C_YLW}• Duration  :${C_NC} $vdays Days (Expires: $EXP_DATE)"
+                echo -e "${C_YLW}• Data Limit:${C_NC} $vgb GB"
+                echo -e "${C_YLW}• UUID      :${C_NC} $UUID"
+                echo -e "${C_WHT}• Link      :${C_NC} ${C_CYN}$VLESS_LINK${C_NC}"
                 
             elif [ "$sub_v2ray" = "2" ]; then
                 read -p "Enter VMess Username: " vname
+                read -p "Enter Expiry Days (عدد الأيام): " vdays
+                read -p "Enter Data Limit in GB (حجم الجيجابايت): " vgb
+                
                 UUID=$(cat /proc/sys/kernel/random/uuid)
+                EXP_DATE=$(date -d "+${vdays:-30} days" +"%Y-%m-%d" 2>/dev/null || date -v+${vdays:-30}d +"%Y-%m-%d")
                 
                 python3 -c "
 import json
@@ -184,15 +193,17 @@ for inbound in data['inbounds']:
 with open('$CONFIG_FILE', 'w') as f:
     json.dump(data, f, indent=2)
 "
-                # تجهيز وتشفير رابط VMess بصيغة Base64 كالنظام القياسي
                 VMESS_JSON="{\"v\":\"2\",\"ps\":\"${vname}-VMESS80\",\"add\":\"$DOMAIN\",\"port\":\"80\",\"id\":\"$UUID\",\"aid\":\"0\",\"scy\":\"auto\",\"net\":\"type\",\"type\":\"none\",\"host\":\"\",\"path\":\"/\"}"
                 VMESS_LINK="vmess://$(echo -n "$VMESS_JSON" | base64 -w 0)"
 
-                echo -e "${C_GRN}VMess User Added to Port 80 Successfully!${C_NC}"
-                echo -e "${C_YLW}------------------------------------------------------${C_NC}"
-                echo -e "${C_WHT}VMess Link:${C_NC}"
-                echo -e "${C_CYN}$VMESS_LINK${C_NC}"
-                echo -e "${C_YLW}------------------------------------------------------${C_NC}"
+                echo -e "${C_GRN}====================================================${C_NC}"
+                echo -e "${C_GRN} VMess User Created Successfully!                    ${C_NC}"
+                echo -e "${C_GRN}====================================================${C_NC}"
+                echo -e "${C_YLW}• Username  :${C_NC} $vname"
+                echo -e "${C_YLW}• Duration  :${C_NC} $vdays Days (Expires: $EXP_DATE)"
+                echo -e "${C_YLW}• Data Limit:${C_NC} $vgb GB"
+                echo -e "${C_YLW}• UUID      :${C_NC} $UUID"
+                echo -e "${C_WHT}• Link      :${C_NC} ${C_CYN}$VMESS_LINK${C_NC}"
                 
             elif [ "$sub_v2ray" = "3" ]; then
                 echo -e "${C_YLW}--- Contents of $CONFIG_FILE ---${C_NC}"
