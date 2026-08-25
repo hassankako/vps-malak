@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v5.3 Masterpiece
+# VERSION: v5.4 Masterpiece
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -31,7 +31,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v5.3 ]            ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}               [ PROFESSIONAL VPS MANAGER v5.4 ]            ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain     :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
@@ -43,7 +43,7 @@ while true; do
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🔑 SSH / OVPN Manager                              ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} ⚡ VMess Manager                                   ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 🚀 VLESS Manager                                   ${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} ⚙️ All Ports & Settings                            ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} ⚙️ All Ports, Domain & Banner Settings             ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
     echo -e "${C_WHT}                  Date: $(date '+%Y-%m-%d %H:%M')${C_NC}"
     echo ""
@@ -73,11 +73,10 @@ while true; do
                 echo -e "${C_WHT} Username  : ${C_CYN}$uname${C_NC}"
                 echo -e "${C_WHT} Password  : ${C_CYN}$upass${C_NC}"
                 echo -e "${C_WHT} Host/IP   : ${C_CYN}$PUBLIC_IP${C_NC}"
+                echo -e "${C_WHT} Domain    : ${C_CYN}$DOMAIN${C_NC}"
                 echo -e "${C_WHT} Expires   : ${C_GRN}$EXP_DATE${C_NC}"
                 echo -e "\n${C_YLW}--- OpenVPN TCP / UDP Payload ---${C_NC}"
-                echo -e "${C_CYN}GET / HTTP/1.1[crlf]Host: $PUBLIC_IP[crlf][crlf]${C_NC}"
-                echo -e "${C_YLW}--- OpenVPN Port ---${C_NC}"
-                echo -e "${C_CYN}TCP: 1194 | UDP: 2200${C_NC}"
+                echo -e "${C_CYN}GET / HTTP/1.1[crlf]Host: $DOMAIN[crlf][crlf]${C_NC}"
                 echo -e "${C_GRN}==================================================${C_NC}"
                 
             elif [ "$sub" = "2" ]; then
@@ -125,27 +124,33 @@ while true; do
             ;;
         4)
             clear
-            echo -e "${C_YLW}--- ALL PORTS & SETTINGS ---${NC}"
-            echo "1. Open Custom Port"
-            echo "2. View All Open Ports"
-            echo "3. Open All Standard VPN/Proxy Ports"
-            read -p "Choose [1-3]: " s_choice
+            echo -e "${C_YLW}--- SETTINGS: DOMAIN & BANNER & PORTS ---${NC}"
+            echo "1. Set / Change Domain"
+            echo "2. Set / Change SSH Banner (Welcome Message)"
+            echo "3. Open Custom Port"
+            echo "4. View All Open Ports"
+            read -p "Choose [1-4]: " s_choice
             case $s_choice in
                 1)
+                    read -p "Enter your domain (e.g., example.com): " new_domain
+                    echo "$new_domain" > /etc/domain
+                    echo -e "${C_GRN}Domain updated successfully to: $new_domain${C_NC}"
+                    ;;
+                2)
+                    read -p "Enter your custom banner message: " banner_msg
+                    echo "$banner_msg" > /etc/issue.net
+                    sed -i 's/#Banner none/Banner \/etc\/issue.net/g' /etc/ssh/sshd_config 2>/dev/null
+                    systemctl restart sshd 2>/dev/null || systemctl restart ssh 2>/dev/null
+                    echo -e "${C_GRN}SSH Banner updated successfully!${C_NC}"
+                    ;;
+                3)
                     read -p "Enter port number: " nport
                     ufw allow "$nport" 2>/dev/null
                     iptables -A INPUT -p tcp --dport "$nport" -j ACCEPT 2>/dev/null
                     echo -e "${C_GRN}Port $nport opened!${C_NC}"
                     ;;
-                2)
+                4)
                     netstat -tuln 2>/dev/null || ss -tuln
-                    ;;
-                3)
-                    for p in 22 80 443 8080 2082 2083 2095 8443 1194; do
-                        ufw allow $p 2>/dev/null
-                        iptables -A INPUT -p tcp --dport $p -j ACCEPT 2>/dev/null
-                    done
-                    echo -e "${C_GRN}All standard ports opened!${C_NC}"
                     ;;
             esac
             read -p "Press Enter to continue..."
