@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script
-# VERSION: v7.7 Perfect Frame & Auto Ports
+# VERSION: v7.9 Full SSH + V2Ray + FastDNS & Ports
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -51,7 +51,7 @@ while true; do
 
     echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                ⚡  H A S S A N   K 3 K O  ⚡               ${C_NC}${C_PRP}║${C_NC}"
-    echo -e "${C_PRP}║${C_NC}${C_CYN}             [ PERFECT PANEL DESIGN v7.7 ]              ${C_NC}${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}${C_CYN}             [ SCRIPT MANAGER v7.9 ]                    ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• IP Address  :${C_NC} ${C_WHT}$PUBLIC_IP${C_NC}"
     echo -e "${C_PRP}║${C_NC} ${C_BLU}• Domain      :${C_NC} ${C_CYN}$DOMAIN${C_NC}"
@@ -59,7 +59,7 @@ while true; do
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
     echo -e "${C_PRP}║${C_NC}${C_YLW}                   --- MAIN CONTROL ---                     ${C_NC}${C_PRP}║${C_NC}"
     echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
-    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🚀 Install & Auto-Open All Ports                   ${C_PRP}║${C_NC}"
+    echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} 🚀 Install & Auto-Open All Ports (FastDNS/80/53)   ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} 📊 Information Port Service (Ports List)           ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 👤 SSH Accounts Manager                            ${C_PRP}║${C_NC}"
     echo -e "${C_PRP}║${C_NC}  ${C_GRN}[4]${C_NC} 🌐 V2Ray Accounts Manager                          ${C_PRP}║${C_NC}"
@@ -73,19 +73,20 @@ while true; do
     case $choice in
         1)
             clear
-            echo -e "${C_YLW}--- INSTALLING TOOLS & OPENING ALL REQUIRED PORTS ---${C_NC}"
+            echo -e "${C_YLW}--- INSTALLING TOOLS & OPENING HIGH-SPEED PORTS (80, 53, DNS) ---${C_NC}"
             apt-get update -y >/dev/null 2>&1
             apt-get install ufw iptables -y >/dev/null 2>&1
             
-            echo -e "${C_CYN}Opening ports in firewall (UFW)...${C_NC}"
-            PORTS_TO_OPEN=(22 80 81 109 143 442 443 53 88 1194 2200 7100 7200 7300 8080 8880)
+            echo -e "${C_CYN}Configuring Firewall & Opening Ports (SSH, V2Ray, FastDNS)...${C_NC}"
+            # بورتات الـ SSH، الويب، البورتات السريعة 80 و 53، و SlowDNS / FastDNS
+            PORTS_TO_OPEN=(22 53 80 81 109 143 442 443 88 1194 2200 5300 7100 7200 7300 8080 8880)
             for p in "${PORTS_TO_OPEN[@]}"; do
                 ufw allow "$p" >/dev/null 2>&1
                 ufw allow "$p/udp" >/dev/null 2>&1
             done
             ufw --force enable >/dev/null 2>&1
             
-            echo -e "${C_GRN}All Ports Have Been Successfully Opened & Configured!${C_NC}"
+            echo -e "${C_GRN}All Ports (including Port 80, 53 & FastDNS) Opened Successfully!${C_NC}"
             read -p "Press Enter to continue..."
             ;;
         2)
@@ -99,7 +100,7 @@ while true; do
             echo -e "\t│ ${C_GRN}» Dropbear Websocket       ${C_CYN}: 443, 109       ${C_YLW}│${C_NC}"
             echo -e "\t│ ${C_GRN}» SSH Websocket SSL        ${C_CYN}: 443            ${C_YLW}│${C_NC}"
             echo -e "\t│ ${C_GRN}» SSH Websocket            ${C_CYN}: 80             ${C_YLW}│${C_NC}"
-            echo -e "\t│ ${C_GRN}» SSH UDP                  ${C_CYN}: 1-65535        ${C_YLW}│${C_NC}"
+            echo -e "\t│ ${C_GRN}» SSH UDP (Speed Boost)    ${C_CYN}: 1-65535        ${C_YLW}│${C_NC}"
             echo -e "\t│ ${C_GRN}» OpenVPN SSL              ${C_CYN}: 443            ${C_YLW}│${C_NC}"
             echo -e "\t│ ${C_GRN}» OpenVPN Websocket SSL    ${C_CYN}: 443            ${C_YLW}│${C_NC}"
             echo -e "\t│ ${C_GRN}» OpenVPN TCP              ${C_CYN}: 443, 1194      ${C_YLW}│${C_NC}"
@@ -107,8 +108,7 @@ while true; do
             echo -e "\t│ ${C_GRN}» Nginx Webserver          ${C_CYN}: 443, 80, 81    ${C_YLW}│${C_NC}"
             echo -e "\t│ ${C_GRN}» Haproxy Loadbalancer     ${C_CYN}: 443, 80        ${C_YLW}│${C_NC}"
             echo -e "\t│ ${C_GRN}» DNS Server               ${C_CYN}: 443, 53        ${C_YLW}│${C_NC}"
-            echo -e "\t│ ${C_GRN}» DNS Client               ${C_CYN}: 443, 88        ${C_YLW}│${C_NC}"
-            echo -e "\t│ ${C_GRN}» XRAY DNS (SLOWDNS)       ${C_CYN}: 443, 53        ${C_YLW}│${C_NC}"
+            echo -e "\t│ ${C_GRN}» FastDNS / SlowDNS        ${C_CYN}: 53, 5300, 443  ${C_YLW}│${C_NC}"
             echo -e "\t│ ${C_GRN}» XRAY Vmess TLS           ${C_CYN}: 443            ${C_YLW}│${C_NC}"
             echo -e "\t│ ${C_GRN}» XRAY Vmess gRPC          ${C_CYN}: 443            ${C_YLW}│${C_NC}"
             echo -e "\t│ ${C_GRN}» XRAY Vmess None TLS      ${C_CYN}: 80             ${C_YLW}│${C_NC}"
@@ -127,9 +127,75 @@ while true; do
             read -p "Press Enter to return to main menu..."
             ;;
         3)
-            clear
-            echo -e "${C_GRN}SSH Manager Menu (Coming soon)${C_NC}"
-            read -p "Press Enter to continue..."
+            while true; do
+                clear
+                echo -e "${C_PRP}╔════════════════════════════════════════════════════════════╗${C_NC}"
+                echo -e "${C_PRP}║${C_NC}${C_YLW}                👤 SSH ACCOUNTS MANAGER                     ${C_NC}${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}╠════════════════════════════════════════════════════════════╣${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[1]${C_NC} ➕ Create SSH Account                                ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[2]${C_NC} 🗑️ Delete SSH Account                              ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[3]${C_NC} 📋 List Active SSH Users                           ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}║${C_NC}  ${C_GRN}[0]${C_NC} 🔙 Back to Main Menu                               ${C_PRP}║${C_NC}"
+                echo -e "${C_PRP}╚════════════════════════════════════════════════════════════╝${C_NC}"
+                echo ""
+                read -n 1 -p "Select option [0-3]: " ssh_choice
+                echo ""
+                
+                case $ssh_choice in
+                    1)
+                        clear
+                        echo -e "${C_YLW}--- CREATE NEW SSH ACCOUNT ---${C_NC}"
+                        read -p "Enter Username: " username
+                        if id "$username" >/dev/null 2>&1; then
+                            echo -e "${C_RED}Error: User already exists!${C_NC}"
+                        else
+                            read -p "Enter Password: " password
+                            read -p "Enter Expiry Days (e.g., 30): " days
+                            
+                            exp_date=$(date -d "+$days days" +"%Y-%m-%d" 2>/dev/null || date -v +${days}d +"%Y-%m-%d")
+                            
+                            useradd -e "$exp_date" -s /bin/false -M "$username" >/dev/null 2>&1
+                            echo "$username:$password" | chpasswd >/dev/null 2>&1
+                            
+                            echo -e "${C_GRN}----------------------------------------${C_NC}"
+                            echo -e "${C_GRN}Account Created Successfully!${C_NC}"
+                            echo -e "Host/IP   : ${C_CYN}$PUBLIC_IP${C_NC}"
+                            echo -e "Username  : ${C_WHT}$username${C_NC}"
+                            echo -e "Password  : ${C_WHT}$password${C_NC}"
+                            echo -e "Expires On: ${C_YLW}$exp_date${C_NC}"
+                            echo -e "${C_GRN}----------------------------------------${C_NC}"
+                        fi
+                        read -p "Press Enter to continue..."
+                        ;;
+                    2)
+                        clear
+                        echo -e "${C_YLW}--- DELETE SSH ACCOUNT ---${C_NC}"
+                        read -p "Enter Username to Delete: " del_user
+                        if id "$del_user" >/dev/null 2>&1; then
+                            userdel -r "$del_user" >/dev/null 2>&1
+                            echo -e "${C_GRN}User '$del_user' deleted successfully!${C_NC}"
+                        else
+                            echo -e "${C_RED}Error: User not found!${C_NC}"
+                        fi
+                        read -p "Press Enter to continue..."
+                        ;;
+                    3)
+                        clear
+                        echo -e "${C_YLW}--- ACTIVE SSH USERS ---${C_NC}"
+                        echo -e "${C_CYN}Username\t\tExpires Date${C_NC}"
+                        echo -e "----------------------------------------"
+                        awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd | while read u; do
+                            exp=$(chage -l "$u" | grep "Account expires" | cut -d: -f2)
+                            echo -e "${C_GRN}$u\t\t${C_WHT}$exp${C_NC}"
+                        done
+                        echo -e "----------------------------------------"
+                        read -p "Press Enter to continue..."
+                        ;;
+                    0)
+                        break
+                        ;;
+                esac
+            done
             ;;
         4)
             clear
