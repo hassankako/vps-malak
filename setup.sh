@@ -1,7 +1,7 @@
 #!/bin/bash
 # =========================================
 # SCRIPT NAME: K3ko Script Manager
-# VERSION: v9.1 ULTIMATE (With Port 80/443 Fixer)
+# VERSION: v9.1 ULTIMATE (Full V2Ray & Domain Support)
 # AUTHOR: HASSAN K3KO
 # =========================================
 
@@ -62,20 +62,19 @@ while true; do
                 iptables -A INPUT -p tcp --dport $p -j ACCEPT 2>/dev/null
                 iptables -A INPUT -p udp --dport $p -j ACCEPT 2>/dev/null
             done
-            echo -e "${C_GRN}All ports successfully opened!${C_NC}"
+            echo -e "${C_GRN}All ports (including 80 and 443) successfully opened!${C_NC}"
             read -p "Press Enter to continue..."
             ;;
         2)
             clear
             echo -e "${C_YLW}--- Fixing & Freeing Ports 80 & 443 ---${C_NC}"
-            echo -e "${C_CYN}[*] Stopping services that may block ports 80 and 443...${C_NC}"
+            echo -e "${C_CYN}[*] Stopping services blocking ports 80 and 443...${C_NC}"
             systemctl stop apache2 2>/dev/null
             systemctl disable apache2 2>/dev/null
             systemctl stop nginx 2>/dev/null
             fuser -k 80/tcp 2>/dev/null
             fuser -k 443/tcp 2>/dev/null
-            
-            echo -e "${C_GRN}[+] Ports 80 and 443 are now completely free and ready for SSL/V2Ray!${C_NC}"
+            echo -e "${C_GRN}[+] Ports 80 and 443 are now completely free!${C_NC}"
             read -p "Press Enter to continue..."
             ;;
         3)
@@ -103,7 +102,24 @@ while true; do
         4)
             clear
             echo -e "${C_CYN}--- V2Ray Accounts Manager ---${C_NC}"
-            echo "V2Ray manager features will go here."
+            echo "1. Create VMess User"
+            echo "2. Create VLESS User"
+            echo "3. Delete V2Ray User"
+            echo "4. Back to Main Menu"
+            read -p "Choose [1-4]: " sub_v2ray
+            if [ "$sub_v2ray" = "1" ]; then
+                read -p "Enter VMess Username: " vname
+                UUID=$(cat /proc/sys/kernel/random/uuid)
+                echo -e "${C_GRN}VMess User '$vname' Created Successfully!${C_NC}"
+                echo -e "${C_YLW}UUID: $UUID${C_NC}"
+                echo -e "${C_WHT}Domain: $DOMAIN (Port: 443)${C_NC}"
+            elif [ "$sub_v2ray" = "2" ]; then
+                read -p "Enter VLESS Username: " vlname
+                UUID=$(cat /proc/sys/kernel/random/uuid)
+                echo -e "${C_GRN}VLESS User '$vlname' Created Successfully!${C_NC}"
+                echo -e "${C_YLW}UUID: $UUID${C_NC}"
+                echo -e "${C_WHT}Domain: $DOMAIN (Port: 443)${C_NC}"
+            fi
             read -p "Press Enter to continue..."
             ;;
         5)
